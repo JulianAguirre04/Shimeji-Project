@@ -385,14 +385,21 @@ function update() {
     
         // ── JUMPING ───────────────────────────────────────────────────
         case 'jumping': {
-          if (jumpY === 0 && jumpV === 0) {
-            // landed
-            enterWalk()
+            if (!isDragging) {
+              // apply gravity when dropped
+              if (jumpY < 0 || jumpV !== 0) {
+                jumpY += jumpV
+                jumpV += 1.8
+                if (jumpY >= 0) { jumpY = 0; jumpV = 0 }
+              }
+              // only transition to walk once grounded and not being dragged
+              if (posY >= groundY && jumpV === 0) {
+                posY = groundY
+                enterWalk()
+              }
+            }
+            break
           }
-          break
-        }
-      }
-}
 // DRAWING IT ALL
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
