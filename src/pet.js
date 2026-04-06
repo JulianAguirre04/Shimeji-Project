@@ -58,9 +58,18 @@ const IDLE_ANIMS = ['idle', 'realidle', 'idleBlob', 'idleFish']
 const sheets = {}
 Object.entries(ANIM).forEach(([key, anim]) => {
   const img = new Image()
-  img.src = path.join(__dirname, `../assets/${anim.src}`)
+  img.src = path.join(__dirname, '../assets/Kirbys/', anim.src)
   sheets[key] = img
 })
+
+/// Error image loding finder
+Object.entries(sheets).forEach(([key, img]) => {
+    img.onerror = () => console.error(`FAILED TO LOAD: ${key} → ${img.src}`)
+    img.onload  = () => console.log(`loaded ok: ${key}`)
+  })
+  foodImg.onerror = () => console.error(`FAILED TO LOAD: foodImg → ${foodImg.src}`)
+  foodImg.onload  = () => console.log(`loaded ok: foodImg`)
+
 
 // food image 
 const foodImg = new Image()
@@ -435,7 +444,7 @@ function draw() {
     const bx = posX + display / 2
     const by = posY + jumpY - 10
   
-    ctx.font = 'bold 13px "Comic Sans MS", monospace'
+    ctx.font = 'bold 13px "Comic Sans MS", monospace' /// Look into getting cute kirby font
     ctx.textAlign = 'center'
     const tw  = ctx.measureText(bubble.text).width
     const pad = 10
