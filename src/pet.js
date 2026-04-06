@@ -10,40 +10,38 @@ canvas.height = window.screen.height
 canvas.style.width  = canvas.width  + 'px'
 canvas.style.height = canvas.height + 'px'
 
-const DISPLAY_FAT = 64
-const DISPLAY_NORMAL = 96
+const DISPLAY_FAT = 96
+const DISPLAY_NORMAL = 64
 
-//sprite sheet(now gone)
-const DISPLAY = 96 // how big kirby renders on scrren, larger to compensate for fat kirby
 
 
 //animation rows in sheet
 
 const ANIM = {
     // ── Core locomotion ──────────────────────────────────────────
-    walk:        { src: 'Kirby-walk_sheet.png',        frames: 10, frameW: 32, frameH: 25, fps: 12 },
+    walk:        { src: 'Kirby-walk_sheet.png',         frames: 10, frameW: 26, frameH: 25, fps: 6 }, //adjusted fps to 6 and frameW to 22
     jump:        { src: 'Kirby-jump_sheet.png',         frames: 5,  frameW: 43, frameH: 40, fps: 10 },
     trip:        { src: 'Kirby-trip_sheet.png',         frames: 12, frameW: 30, frameH: 30, fps: 10 },
-    idle:        { src: 'Kirby-idle_sheet.png',         frames: 7,  frameW: 27, frameH: 32, fps: 8  },
-    realidle:    { src: 'Kirby-Realidle_sheet.png',     frames: 3,  frameW: 25, frameH: 31, fps: 6  },
-    idleBlob:    { src: 'Kirby-IdleBlob_sheet.png',     frames: 6,  frameW: 43, frameH: 36, fps: 7  },
-    idleFish:    { src: 'Kirby-IdleFish_sheet.png',     frames: 7,  frameW: 40, frameH: 54, fps: 8  },
+    Cuteidle:    { src: 'Kirby-Cuteidle_sheet.png',     frames: 7,  frameW: 24, frameH: 32, fps: 5 },
+    idle:        { src: 'Kirby-idle_sheet.png',         frames: 7,  frameW: 24, frameH: 32, fps: 5 },
+    idleBlob:    { src: 'Kirby-IdleBlob_sheet.png',     frames: 6,  frameW: 40, frameH: 36, fps: 5 },
+    idleFish:    { src: 'Kirby-IdleFish_sheet.png',     frames: 7,  frameW: 36, frameH: 54, fps: 5 },
     sleep:       { src: 'Kirby-Sleep_sheet.png',        frames: 3,  frameW: 36, frameH: 38, fps: 4  },
     wakeup:      { src: 'Kirby-Wakeup_sheet.png',       frames: 6,  frameW: 32, frameH: 31, fps: 8  },
     sneeze:      { src: 'Kirby-Sneeze_sheet.png',       frames: 7,  frameW: 23, frameH: 28, fps: 10 },
     hide:        { src: 'Kirby-Hide_sheet.png',         frames: 5,  frameW: 25, frameH: 33, fps: 8  },
-    annoy:       { src: 'Kirby-annoy_sheet.png',        frames: 2,  frameW: 19, frameH: 32, fps: 6  },
+    annoy:       { src: 'Kirby-annoy_sheet.png',        frames: 1,  frameW: 19, frameH: 32, fps: 1  },
     throwup:     { src: 'Kirby-Throwup_sheet.png',      frames: 5,  frameW: 33, frameH: 34, fps: 9  },
     eat:         { src: 'Kirby-eat_sheet.png',          frames: 6,  frameW: 53, frameH: 36, fps: 10 },
-    fatWalk:     { src: 'Kirby-fatWalk_sheet.png',      frames: 10, frameW: 36, frameH: 44, fps: 10 },
+    fatWalk:     { src: 'Kirby-fatWalk_sheet.png',      frames: 10, frameW: 34, frameH: 44, fps: 10 }, // adjusted frameW to 34
     fatIdle:     { src: 'Kirby-Fatidle_sheet.png',      frames: 5,  frameW: 22, frameH: 40, fps: 7  },
-    annoyReact1: { src: 'Kirby-AnnoyReact_1_sheet.png', frames: 2,  frameW: 17, frameH: 30, fps: 8  },
-    annoyReact2: { src: 'Kirby-AnnoyReact_2_sheet.png', frames: 2,  frameW: 29, frameH: 26, fps: 8  },
-    annoyReact3: { src: 'Kirby-AnnoyReact_3_sheet.png', frames: 2,  frameW: 61, frameH: 28, fps: 8  },
-    annoyReact4: { src: 'Kirby-AnnoyReact_4_sheet.png', frames: 15, frameW: 17, frameH: 29, fps: 12 },
-    annoyReact5: { src: 'Kirby-AnnoyReact_5_sheet.png', frames: 13, frameW: 23, frameH: 30, fps: 12 },
-    annoyReact6: { src: 'Kirby-AnnoyReact_6_sheet.png', frames: 7,  frameW: 19, frameH: 28, fps: 10 },
-    annoyReact7: { src: 'Kirby-AnnoyReact_7_sheet.png', frames: 10, frameW: 28, frameH: 37, fps: 12 },
+    annoyReact1: { src: 'Kirby-AnnoyReact_1_sheet.png', frames: 2,  frameW: 14, frameH: 30, fps: 6  },
+    annoyReact2: { src: 'Kirby-AnnoyReact_2_sheet.png', frames: 2,  frameW: 24, frameH: 26, fps: 6  },
+    annoyReact3: { src: 'Kirby-AnnoyReact_3_sheet.png', frames: 2,  frameW: 55, frameH: 28, fps: 6  },
+    annoyReact4: { src: 'Kirby-AnnoyReact_4_sheet.png', frames: 15, frameW: 14, frameH: 29, fps: 7  },
+    annoyReact5: { src: 'Kirby-AnnoyReact_5_sheet.png', frames: 13, frameW: 20, frameH: 30, fps: 7  },
+    annoyReact6: { src: 'Kirby-AnnoyReact_6_sheet.png', frames: 7,  frameW: 16, frameH: 28, fps: 7  },
+    annoyReact7: { src: 'Kirby-AnnoyReact_7_sheet.png', frames: 10, frameW: 24, frameH: 37, fps: 7  },
     fishReact:   { src: 'Kirby-FishReact_sheet.png',    frames: 5,  frameW: 44, frameH: 47, fps: 9  },
 }
 
@@ -52,7 +50,7 @@ const ANNOY_REACTS = [
 'annoyReact5','annoyReact6','annoyReact7'
 ]
 
-const IDLE_ANIMS = ['idle', 'realidle', 'idleBlob', 'idleFish']
+const IDLE_ANIMS = ['Cuteidle', 'idle', 'idleBlob', 'idleFish']
 
 //loader for all sheets
 const sheets = {}
@@ -62,18 +60,19 @@ Object.entries(ANIM).forEach(([key, anim]) => {
   sheets[key] = img
 })
 
-/// Error image loding finder
-Object.entries(sheets).forEach(([key, img]) => {
-    img.onerror = () => console.error(`FAILED TO LOAD: ${key} → ${img.src}`)
-    img.onload  = () => console.log(`loaded ok: ${key}`)
-  })
-  foodImg.onerror = () => console.error(`FAILED TO LOAD: foodImg → ${foodImg.src}`)
-  foodImg.onload  = () => console.log(`loaded ok: foodImg`)
-
-
 // food image 
 const foodImg = new Image()
 foodImg.src = path.join(__dirname, '../assets/Foods/Kirby_Apple_Sprite.png')
+
+/// Error image loding finder
+//Object.entries(sheets).forEach(([key, img]) => {
+//    img.onerror = () => console.error(`FAILED TO LOAD: ${key} → ${img.src}`)
+//    img.onload  = () => console.log(`loaded ok: ${key}`)
+//  })
+//  foodImg.onerror = () => console.error(`FAILED TO LOAD: foodImg → ${foodImg.src}`)
+//  foodImg.onload  = () => console.log(`loaded ok: foodImg`)
+
+
 
 // state 
 let posX       = 200
@@ -220,7 +219,7 @@ function enterWalk() {
     state = 'eating'
     food = null  // item disappears as he eats
     setAnim('eat')
-    showBubble('Yummy!')
+    showBubble('SUUUUCCCKKCKC')
   }
   
   function enterFat() {
@@ -489,7 +488,11 @@ function draw() {
     ctx.closePath()
   }
   
-  // ── Mouse interaction ─────────────────────────────────────────────
+  let dragging   = false
+let dragOffX   = 0
+let dragOffY   = 0
+let isDragging = false
+
 function isOverKirby(mx, my) {
   const display = getDisplay()
   const kx = posX
@@ -499,17 +502,65 @@ function isOverKirby(mx, my) {
 }
 
 window.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    // move Kirby with the mouse
+    posX = e.clientX - dragOffX
+    posY = e.clientY - dragOffY
+    jumpY = 0
+    jumpV = 0
+
+    // clamp to screen
+    const display = getDisplay()
+    posX = Math.max(0, Math.min(window.screen.width  - display, posX))
+    posY = Math.max(0, Math.min(window.screen.height - display, posY))
+    return
+  }
+
   if (isOverKirby(e.clientX, e.clientY)) {
     ipcRenderer.send('set-ignore-mouse', false)
-    canvas.style.cursor = 'pointer'
+    canvas.style.cursor = 'grab'
   } else {
     ipcRenderer.send('set-ignore-mouse', true)
     canvas.style.cursor = 'none'
   }
 })
 
+window.addEventListener('mousedown', (e) => {
+  if (!isOverKirby(e.clientX, e.clientY)) return
+  
+  const display = getDisplay()
+  isDragging = true
+  dragOffX   = e.clientX - posX
+  dragOffY   = e.clientY - posY
+
+  // play jump anim while held
+  state = 'jumping'
+  setAnim('jump')
+  frameIdx = 0
+
+  ipcRenderer.send('set-ignore-mouse', false)
+  canvas.style.cursor = 'grabbing'
+})
+
+window.addEventListener('mouseup', (e) => {
+  if (!isDragging) return
+  isDragging = false
+  canvas.style.cursor = 'none'
+  ipcRenderer.send('set-ignore-mouse', true)
+
+  // drop him — if above ground let him fall, otherwise just walk
+  if (posY < groundY) {
+    jumpV = 2   // small downward velocity so he falls naturally
+    state = 'jumping'
+  } else {
+    posY  = groundY
+    enterWalk()
+  }
+})
+
 window.addEventListener('click', (e) => {
   if (!isOverKirby(e.clientX, e.clientY)) return
+  if (isDragging) return  // ignore clicks that are part of a drag
 
   const now = Date.now()
 
@@ -525,14 +576,12 @@ window.addEventListener('click', (e) => {
     if (pokeCount >= 3) {
       enterThrowup()
     } else {
-      // Small hop so poke feels responsive
       if (jumpY === 0) jumpV = -8
     }
     return
   }
 
-  // ── Normal Kirby poke ─────────────────────────────────────────
-  // Check for rapid poke streak → annoy react
+  // ── Normal Kirby poke → annoy ─────────────────────────────────
   if (now - lastPokeTime < POKE_WINDOW) {
     pokeStreak++
   } else {
@@ -546,20 +595,11 @@ window.addEventListener('click', (e) => {
     return
   }
 
-  // Single poke — jump and say something
-  if (jumpY === 0) jumpV = -14
-  state = 'jumping'
-  setAnim('jump')
+  // single click → annoy animation + phrase
+  state = 'annoyReact'
+  setAnim('annoy')
   showBubble(randomPhrase())
 })
-
-// Bubble tick 
-function tickBubble() {
-  if (bubble) {
-    bubble.timer -= 16
-    if (bubble.timer <= 0) bubble = null
-  }
-}
 
 // Za main loop
 function loop() {
