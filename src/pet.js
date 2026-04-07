@@ -13,8 +13,21 @@ canvas.style.height = canvas.height + 'px'
 const DISPLAY_FAT = 96
 const DISPLAY_NORMAL = 64
 
+const sounds = {
+  poke: new Audio(path.join(__dirname, '../assets/sounds/poke.wav')),
+  eat: new Audio(path.join(__dirname, '../assets/sounds/suck.mp3')),
+  jump: new Audio(path.join(__dirname, '../assets/sounds/jump.wav')),
+  poyo: new Audio(path.join(__dirname, '../assets/sounds/poyo.mp3')),
+  dance: new Audio(path.join(__dirname, '../assets/sounds/dance.mp3')),
+  hai: new Audio(path.join(__dirname, '../assets/sounds/hai.mp3')),
+}
 
-
+function playSound(name) {
+  const s = sounds[name]
+  if (!s) return
+  s.currentTime = 0  // rewind so it can replay quickly
+  s.play()
+}
 //animation rows in sheet
 
 const SPRITES = path.join(__dirname, '../assets/Kirby-Sprites')
@@ -28,7 +41,7 @@ const ANIM = {
   sleep:       { frames: 3,  fps: 2  }, //adjusted fps was 4 now 2
   wakeup:      { frames: 6,  fps: 8  },
   sneeze:      { frames: 5,  fps: 4  }, //adjusted fps was 7 now 4
-  hide:        { frames: 4,  fps: 8  },
+  hide:        { frames: 4,  fps: 6  },
   annoy:       { frames: 1,  fps: 1  }, //adjusted fps was 6 now 1
   throwup:     { frames: 5,  fps: 9  },
   eat:         { frames: 9,  fps: 10 },
@@ -139,7 +152,8 @@ let frameTick  = 0
 // Main state machine
 // 'walk' | 'idle' | 'sleeping' | 'wakeup' | 'sneeze' | 'trip'
 // 'eating' | 'walkToFood' | 'fatWalk' | 'fatIdle' | 'throwup'
-// 'jumping' | 'annoyReact' | 'annoyChain'
+// 'jumping' | 'annoyReact' | 'annoyChain' | 'hide' |
+let lastIdleAnim = null
 let state      = 'walk'
 let stateTimer = 0  // counts down to 0 then transitions
 
@@ -147,6 +161,11 @@ let isFat      = false
 let pokeCount  = 0
 let jumpY      = 0
 let jumpV      = 0
+
+// Hidden varibles - lets kirby "hide" and "reappear"
+let isHidden    = false
+let hideTimer   = 0
+let isReversing = false
 
 // Idle timer — how long Kirby has been idle/walking without eating or sleeping
 let idleTimer  = 0
@@ -206,7 +225,23 @@ function setAnim(name){
 function advanceFrame() {
   const anim = ANIM[animName]
   if (!anim) return
-
+//-------Reverse frames------------------------------------------------
+if (isReversing) {
+  const ticksPerFrame = Math.max(1, Math.round(60 / anim.fps))
+  frameTick++
+  if (frameTick >= ticksPerFrame) {
+    frameTick = 0
+    if (frameIdx <= 0) {
+      animDone = true
+      frameIdx = 0
+      isReversing = false
+    } else {
+      frameIdx--
+    }
+  }
+  return
+}
+//----------------------------------------------------------
   const ticksPerFrame = Math.max(1, Math.round(60 / anim.fps))
   frameTick++
   if (frameTick < ticksPerFrame) return
@@ -271,8 +306,10 @@ function enterWalk() {
   
   function enterIdle() {
     state = 'idle'
-    stateTimer = 120 + Math.floor(Math.random() * 180) // 2-5 seconds
-    setAnim(randomIdleAnim())
+    stateTimer = 240 + Math.floor(Math.random() * 240) //4-8 seconds of idle
+    const chosen = randomIdleAnim()
+    lastIdleAnim = chosen
+    setAnim(chosen)
   }
   
   function enterSleep() {
@@ -290,11 +327,13 @@ function enterWalk() {
   function enterSneeze() {
     state = 'sneeze'
     setAnim('sneeze')
+    showBubble('ACHOOOO')
   }
   
   function enterTrip() {
     state = 'trip'
     setAnim('trip')
+    showBubble('*trips*')
   }
 
   function spawnFood() {
@@ -336,12 +375,20 @@ function enterWalk() {
   function enterAnnoyReact() {
     state = 'annoyReact'
     setAnim(randomAnnoyReact())
+    showBubble('<3')
   }
   
   function enterFatIdle() {
     state = 'fatIdle'
     stateTimer = 80 + Math.floor(Math.random() * 120)
     setAnim('fatIdle')
+  }
+
+  function enterHide() {
+    state = 'hiding'
+    isReversing = false
+    setAnim('hide')
+    showBubble('Whats in files?')
   }
 
 
@@ -378,9 +425,10 @@ function update() {
           }
     
           // Normal Kirby random events while walking
-          if (Math.random() < 0.003) { enterSneeze(); break }
-          if (Math.random() < 0.002) { enterTrip();   break }
-          if (Math.random() < 0.004) { enterIdle();   break }
+          if (Math.random() < 0.001) { enterSneeze(); break }
+          if (Math.random() < 0.001) { enterTrip();   break }
+          if (Math.random() < 0.002) { enterIdle();   break }
+          if (Math.random() < 0.0005) { enterHide();   break }
     
           // Food spawns after idle timer
           if (idleTimer > IDLE_TO_FOOD && !food && Math.random() < 0.005) {
@@ -424,7 +472,22 @@ function update() {
         // ── IDLE ──────────────────────────────────────────────────────
         case 'idle': {
           stateTimer--
-          if (stateTimer <= 0) enterWalk()
+          if (stateTimer <= 0) {
+            // 25% chance of fish react if that was the idle
+            if (lastIdleAnim === 'idleFish' && Math.random() < 0.25) {
+              state = 'fishReact'
+              setAnim('fishReact')
+            } else {
+              enterWalk()
+            }
+            lastIdleAnim = null
+          }
+          break
+        }
+
+        //── FISH REACT──────────────────────────────────────────────────────
+        case 'fishReact': {
+          if (animDone) enterWalk()
           break
         }
     
@@ -492,6 +555,42 @@ function update() {
             }
             break
           }
+
+      //── HIDE ───────────────────────────────────────────────────
+      case 'hiding': {
+        if (animDone) {
+          // animation finished — Kirby is now hidden
+          isHidden  = true
+          hideTimer = 180 + Math.floor(Math.random() * 240) // 3-7 seconds
+          state     = 'hidden'
+        }
+        break
+      }
+      
+      case 'hidden': {
+        hideTimer--
+        if (hideTimer <= 0) {
+          // reappear at random spot and play hide in reverse
+          isHidden  = false
+          posX      = Math.random() * (window.screen.width  - getDisplay())
+          posY      = groundY
+          isReversing = true
+          frameIdx  = ANIM['hide'].frames - 1  // start from last frame
+          frameTick = 0
+          animDone  = false
+          animName  = 'hide'
+          state     = 'unhiding'
+        }
+        break
+      }
+      
+      case 'unhiding': {
+        if (animDone) {
+          isReversing = false
+          enterWalk()
+        }
+        break
+      }
         }
     }
 // DRAWING IT ALL
@@ -501,6 +600,10 @@ function draw() {
   const display = getDisplay()
 
   if (food) drawFood(food.x, food.y)
+
+  // kirby hiding
+  if (isHidden) return
+
 
   // get current frame image from array
   const frameImg = sheets[animName]?.[frameIdx]
