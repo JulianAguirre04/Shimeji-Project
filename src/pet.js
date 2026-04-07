@@ -17,61 +17,111 @@ const DISPLAY_NORMAL = 64
 
 //animation rows in sheet
 
+const SPRITES = path.join(__dirname, '../assets/Kirby-Sprites')
+
 const ANIM = {
-    // ── Core locomotion ──────────────────────────────────────────
-    walk:        { src: 'Kirby-walk_sheet.png',         frames: 10, frameW: 26, frameH: 25, fps: 6 }, //adjusted fps to 6 and frameW to 22
-    jump:        { src: 'Kirby-jump_sheet.png',         frames: 5,  frameW: 43, frameH: 40, fps: 10 },
-    trip:        { src: 'Kirby-trip_sheet.png',         frames: 12, frameW: 30, frameH: 30, fps: 10 },
-    Cuteidle:    { src: 'Kirby-Cuteidle_sheet.png',     frames: 7,  frameW: 24, frameH: 32, fps: 5 },
-    idle:        { src: 'Kirby-idle_sheet.png',         frames: 7,  frameW: 24, frameH: 32, fps: 5 },
-    idleBlob:    { src: 'Kirby-IdleBlob_sheet.png',     frames: 6,  frameW: 40, frameH: 36, fps: 5 },
-    idleFish:    { src: 'Kirby-IdleFish_sheet.png',     frames: 7,  frameW: 36, frameH: 54, fps: 5 },
-    sleep:       { src: 'Kirby-Sleep_sheet.png',        frames: 3,  frameW: 36, frameH: 38, fps: 4  },
-    wakeup:      { src: 'Kirby-Wakeup_sheet.png',       frames: 6,  frameW: 32, frameH: 31, fps: 8  },
-    sneeze:      { src: 'Kirby-Sneeze_sheet.png',       frames: 7,  frameW: 23, frameH: 28, fps: 10 },
-    hide:        { src: 'Kirby-Hide_sheet.png',         frames: 5,  frameW: 25, frameH: 33, fps: 8  },
-    annoy:       { src: 'Kirby-annoy_sheet.png',        frames: 1,  frameW: 19, frameH: 32, fps: 1  },
-    throwup:     { src: 'Kirby-Throwup_sheet.png',      frames: 5,  frameW: 33, frameH: 34, fps: 9  },
-    eat:         { src: 'Kirby-eat_sheet.png',          frames: 6,  frameW: 53, frameH: 36, fps: 10 },
-    fatWalk:     { src: 'Kirby-fatWalk_sheet.png',      frames: 10, frameW: 34, frameH: 44, fps: 10 }, // adjusted frameW to 34
-    fatIdle:     { src: 'Kirby-Fatidle_sheet.png',      frames: 5,  frameW: 22, frameH: 40, fps: 7  },
-    annoyReact1: { src: 'Kirby-AnnoyReact_1_sheet.png', frames: 2,  frameW: 14, frameH: 30, fps: 6  },
-    annoyReact2: { src: 'Kirby-AnnoyReact_2_sheet.png', frames: 2,  frameW: 24, frameH: 26, fps: 6  },
-    annoyReact3: { src: 'Kirby-AnnoyReact_3_sheet.png', frames: 2,  frameW: 55, frameH: 28, fps: 6  },
-    annoyReact4: { src: 'Kirby-AnnoyReact_4_sheet.png', frames: 15, frameW: 14, frameH: 29, fps: 7  },
-    annoyReact5: { src: 'Kirby-AnnoyReact_5_sheet.png', frames: 13, frameW: 20, frameH: 30, fps: 7  },
-    annoyReact6: { src: 'Kirby-AnnoyReact_6_sheet.png', frames: 7,  frameW: 16, frameH: 28, fps: 7  },
-    annoyReact7: { src: 'Kirby-AnnoyReact_7_sheet.png', frames: 10, frameW: 24, frameH: 37, fps: 7  },
-    fishReact:   { src: 'Kirby-FishReact_sheet.png',    frames: 5,  frameW: 44, frameH: 47, fps: 9  },
+  walk:        { frames: 11, fps: 8  }, //adjusted fps was 8 now 6
+  jump:        { frames: 6,  fps: 10 },
+  trip:        { frames: 12, fps: 5  }, //adjusted fps was 7 now 5
+  idle:        { frames: 3,  fps: 3  }, //adjusted fps was 5 now 3
+  cuteIdle:    { frames: 7,  fps: 3  }, //adjusted fps was 5 now 3
+  sleep:       { frames: 3,  fps: 2  }, //adjusted fps was 4 now 2
+  wakeup:      { frames: 6,  fps: 8  },
+  sneeze:      { frames: 5,  fps: 4  }, //adjusted fps was 7 now 4
+  hide:        { frames: 4,  fps: 8  },
+  annoy:       { frames: 1,  fps: 1  }, //adjusted fps was 6 now 1
+  throwup:     { frames: 5,  fps: 9  },
+  eat:         { frames: 9,  fps: 10 },
+  fatWalk:     { frames: 10, fps: 10 },
+  fatIdle:     { frames: 3,  fps: 7  },
+  idleBlob:    { frames: 8,  fps: 5  },
+  idleFish:    { frames: 6,  fps: 3  }, //adjusted fps was 6 now 2
+  fishReact:   { frames: 5,  fps: 9  },
+  annoyReact1: { frames: 1,  fps: 1  }, //adjusted fps was 6 now 1
+  annoyReact2: { frames: 2,  fps: 6  },
+  annoyReact3: { frames: 4,  fps: 6  },
+  annoyReact4: { frames: 9,  fps: 7  },
+  annoyReact5: { frames: 10, fps: 7  },
+  annoyReact6: { frames: 4,  fps: 7  },
+  annoyReact7: { frames: 9,  fps: 7  },
 }
 
 const ANNOY_REACTS = [
-    'annoyReact1','annoyReact2','annoyReact3','annoyReact4',
-'annoyReact5','annoyReact6','annoyReact7'
+  'annoyReact1', 'annoyReact2', 'annoyReact3',
+  'annoyReact4', 'annoyReact5', 'annoyReact6', 'annoyReact7'
 ]
 
-const IDLE_ANIMS = ['Cuteidle', 'idle', 'idleBlob', 'idleFish']
+const IDLE_ANIMS = ['idle', 'cuteIdle', 'idleBlob', 'idleFish']
 
-//loader for all sheets
+//loader for all sprites
 const sheets = {}
-Object.entries(ANIM).forEach(([key, anim]) => {
-  const img = new Image()
-  img.src = path.join(__dirname, '../assets/Kirbys/', anim.src)
-  sheets[key] = img
-})
 
+function loadFrames(key, folder, namePattern, count) {
+  sheets[key] = []
+  for (let i = 1; i <= count; i++) {
+    const img = new Image()
+    img.src = path.join(SPRITES, folder, namePattern.replace('#', i))
+    sheets[key].push(img)
+  }
+}
+
+// core
+loadFrames('walk',     'Kirby walk',     'Kirby-walk-#.png',      11)
+loadFrames('jump',     'Kirby Jump',     'Kirby_jump_#.png',       6)
+loadFrames('trip',     'Kirby Trip',     'Kirby_trip_#.png',      12)
+loadFrames('idle',     'Idle',           'Kirby_Idle_#.png',       3)
+loadFrames('cuteIdle', 'Cute Idle',      'cute_idle_#.png',        7)
+loadFrames('sleep',    'Kirby sleep',    'Kirby_Sleep_#.png',      3)
+loadFrames('wakeup',   'wakeup',         'Kirby_Wakeup_#.png',     6)
+loadFrames('sneeze',   'Sneeze',         'Kirby_Sneeze_#.png',     5)
+loadFrames('hide',     'Hide',           'Kirby_Hide_#.png',       4)
+loadFrames('throwup',  'Throwup',        'Kirby_Throwup_#.png',    5)
+loadFrames('eat',      'Kirby eat',      'Kirby_eat_#.png',        9)
+
+// fat kirby
+loadFrames('fatWalk',  'Fat walk',       'Kirby_fatWalk_#.png',   10)
+loadFrames('fatIdle',  'Fat Idle',       'Kirby_Fatidle_#.png',    3)
+
+// idles
+loadFrames('idleBlob', 'Blob',           'Kirby_IdleBlob_#.png',   8)
+loadFrames('idleFish', 'Fishing',        'Kirby_IdleFish_#.png',   6)
+
+// fish react
+loadFrames('fishReact','Fish Reaction',  'Kirby-FishReact_#_sheet.png', 5)
+
+// annoy (single sheet file, not split — handle separately)
+sheets['annoy'] = []
+const annoyImg = new Image()
+annoyImg.src = path.join(SPRITES, 'Kirby Annoy', 'Kirby-annoy sheet.png')
+sheets['annoy'].push(annoyImg)
+
+// annoy react 1 (single file in root of Annoy Reactions)
+sheets['annoyReact1'] = []
+const ar1 = new Image()
+ar1.src = path.join(SPRITES, 'Annoy Reactions', 'Kirby-AnnoyReact_1 sheet.png')
+sheets['annoyReact1'].push(ar1)
+
+// annoy reacts 2-7 (each in their own subfolder)
+loadFrames('annoyReact2', 'Annoy Reactions/React 2', 'Kirby-AnnoyReact2_#_sheet.png',  2)
+loadFrames('annoyReact3', 'Annoy Reactions/React 3', 'Kirby-AnnoyReact3_#_sheet.png',  4)
+loadFrames('annoyReact4', 'Annoy Reactions/React 4', 'Kirby-AnnoyReact4_#_sheet.png',  9)
+loadFrames('annoyReact5', 'Annoy Reactions/React 5', 'Kirby-AnnoyReact5_#_sheet.png', 10)
+loadFrames('annoyReact6', 'Annoy Reactions/React 6', 'Kirby-AnnoyReact6_#_sheet.png',  4)
+loadFrames('annoyReact7', 'Annoy Reactions/React 7', 'Kirby-AnnoyReact7_#_sheet.png',  9)
 // food image 
 const foodImg = new Image()
 foodImg.src = path.join(__dirname, '../assets/Foods/Kirby_Apple_Sprite.png')
 
-/// Error image loding finder
-//Object.entries(sheets).forEach(([key, img]) => {
-//    img.onerror = () => console.error(`FAILED TO LOAD: ${key} → ${img.src}`)
-//    img.onload  = () => console.log(`loaded ok: ${key}`)
-//  })
-//  foodImg.onerror = () => console.error(`FAILED TO LOAD: foodImg → ${foodImg.src}`)
-//  foodImg.onload  = () => console.log(`loaded ok: foodImg`)
 
+/// Error image loding finder
+Object.entries(sheets).forEach(([key, frames]) => {
+  frames.forEach((img, i) => {
+    img.onerror = () => console.error(`FAILED: ${key} frame ${i+1} → ${img.src}`)
+    img.onload  = () => console.log(`ok: ${key} frame ${i+1}`)
+  })
+})
+foodImg.onerror = () => console.error(`FAILED: foodImg → ${foodImg.src}`)
+foodImg.onload  = () => console.log(`ok: foodImg`)
 
 
 // state 
@@ -153,22 +203,64 @@ function setAnim(name){
     }
 }
 
-function advanceFrame(){
-    const anim = ANIM[animName]
+function advanceFrame() {
+  const anim = ANIM[animName]
   if (!anim) return
+
   const ticksPerFrame = Math.max(1, Math.round(60 / anim.fps))
   frameTick++
-  if (frameTick >= ticksPerFrame) {
-    frameTick = 0
-    if (frameIdx >= anim.frames - 1) {
-      animDone = true
-      frameIdx = 0  // loop back
-    } else {
-      frameIdx++
+  if (frameTick < ticksPerFrame) return
+  frameTick = 0
+
+  // ── loop frames ───────────────────────────────────────────────
+  // if we're in the loop range, cycle through it loopCount times
+  if (anim.loopFrames && !animDone) {
+    const [loopStart, loopEnd] = [anim.loopFrames[0], anim.loopFrames[anim.loopFrames.length - 1]]
+
+    // initialise loop counter
+    if (typeof anim._loopsDone === 'undefined') anim._loopsDone = 0
+
+    if (frameIdx >= loopStart && frameIdx <= loopEnd) {
+      if (frameIdx === loopEnd) {
+        anim._loopsDone++
+        if (anim._loopsDone >= anim.loopCount) {
+          // finished looping — continue to end of animation
+          anim._loopsDone = undefined
+          frameIdx++
+          if (frameIdx >= anim.frames) {
+            animDone = true
+            frameIdx = 0
+          }
+        } else {
+          // loop back to start of loop range
+          frameIdx = loopStart
+        }
+      } else {
+        frameIdx++
+      }
+      return
     }
   }
-}
 
+  // ── hold last frame ───────────────────────────────────────────
+  if (frameIdx === anim.frames - 1 && anim.holdLastFrame) {
+    frameTick++
+    if (frameTick >= anim.holdLastFrame) {
+      frameTick = 0
+      animDone = true
+      frameIdx = 0
+    }
+    return
+  }
+
+  // ── normal advance ────────────────────────────────────────────
+  if (frameIdx >= anim.frames - 1) {
+    animDone = true
+    frameIdx = 0
+  } else {
+    frameIdx++
+  }
+}
 
 
 // state transitions
@@ -404,40 +496,31 @@ function update() {
     }
 // DRAWING IT ALL
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-  
-    const display = getDisplay()
-    // Draw food item if present
-    if (food) {
-      drawFood(food.x, food.y)
-    }
-  
-    // Draw Kirby
-    const anim  = ANIM[animName]
-    const sheet = sheets[animName]
-    if (!sheet || !sheet.complete || !anim) return
-  
-    const sx    = frameIdx * anim.frameW
-    const sy    = 0
-    const drawX = posX
-    const drawY = posY + jumpY
-  
-    ctx.save()
-    if (facingLeft) {
-      ctx.translate(drawX + display / 2, 0)
-      ctx.scale(-1, 1)
-      ctx.drawImage(sheet, sx, sy, anim.frameW, anim.frameH,
-                    -display / 2, drawY, display, display)
-    } else {
-      ctx.drawImage(sheet, sx, sy, anim.frameW, anim.frameH,
-                    drawX, drawY, display, display)
-    }
-    ctx.restore()
-  
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Speech bubble
-    if (bubble) drawBubble()
+  const display = getDisplay()
+
+  if (food) drawFood(food.x, food.y)
+
+  // get current frame image from array
+  const frameImg = sheets[animName]?.[frameIdx]
+  if (!frameImg || !frameImg.complete || frameImg.naturalWidth === 0) return
+
+  const drawX = posX
+  const drawY = posY + jumpY
+
+  ctx.save()
+  if (facingLeft) {
+    ctx.translate(drawX + display / 2, 0)
+    ctx.scale(-1, 1)
+    ctx.drawImage(frameImg, -display / 2, drawY, display, display)
+  } else {
+    ctx.drawImage(frameImg, drawX, drawY, display, display)
   }
+  ctx.restore()
+
+  if (bubble) drawBubble()
+}
 
   // food
   function drawFood(x, y) {
@@ -497,7 +580,8 @@ function draw() {
     ctx.closePath()
   }
   
-  let dragging   = false
+  // mouse interaction
+let dragging   = false
 let dragOffX   = 0
 let dragOffY   = 0
 let isDragging = false
@@ -610,6 +694,14 @@ window.addEventListener('click', (e) => {
   showBubble(randomPhrase())
 })
 
+
+// bubble tick
+function tickBubble(){
+    if (bubble) {
+        bubble.timer -= 16
+        if (bubble.timer <= 0) bubble = null
+    }
+}
 // Za main loop
 function loop() {
   requestAnimationFrame(loop)
@@ -619,10 +711,16 @@ function loop() {
 }
 
 // Start when all sheets ready 
-let loaded = 0
-const allImages = [...Object.values(sheets), foodImg]  // add foodImg here
+const allFrameImages = Object.values(sheets).flat()
+const allImages = [...allFrameImages, foodImg]
 const total = allImages.length
+let loaded = 0
+
 allImages.forEach(img => {
   img.onload  = () => { loaded++; if (loaded === total) loop() }
-  img.onerror = () => { loaded++; if (loaded === total) loop() }
+  img.onerror = () => {
+    console.error(`failed: ${img.src}`)
+    loaded++
+    if (loaded === total) loop()
+  }
 })
