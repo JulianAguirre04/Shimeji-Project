@@ -20,11 +20,11 @@ const DISPLAY_NORMAL = 64
 const SPRITES = path.join(__dirname, '../assets/Kirby-Sprites')
 
 const ANIM = {
-  walk:        { frames: 11, fps: 8  }, //adjusted fps was 8 now 6
+  walk:        { frames: 10, fps: 8  }, //adjusted fps was 8 now 6
   jump:        { frames: 6,  fps: 10 },
   trip:        { frames: 12, fps: 5  }, //adjusted fps was 7 now 5
   idle:        { frames: 3,  fps: 3  }, //adjusted fps was 5 now 3
-  cuteIdle:    { frames: 7,  fps: 3  }, //adjusted fps was 5 now 3
+  cuteIdle:    { frames: 7,  fps: 3, loopFrames: [2, 3, 4], loopCount: 3  }, //adjusted fps was 5 now 3
   sleep:       { frames: 3,  fps: 2  }, //adjusted fps was 4 now 2
   wakeup:      { frames: 6,  fps: 8  },
   sneeze:      { frames: 5,  fps: 4  }, //adjusted fps was 7 now 4
@@ -34,15 +34,15 @@ const ANIM = {
   eat:         { frames: 9,  fps: 10 },
   fatWalk:     { frames: 10, fps: 10 },
   fatIdle:     { frames: 3,  fps: 7  },
-  idleBlob:    { frames: 8,  fps: 5  },
-  idleFish:    { frames: 6,  fps: 3  }, //adjusted fps was 6 now 2
+  idleBlob:    { frames: 8,  fps: 5, loopFrames: [6, 7], loop: 4  },
+  idleFish:    { frames: 6,  fps: 3, loopFrames: [0, 1, 2], loopCount: 3   }, //adjusted fps was 6 now 2
   fishReact:   { frames: 5,  fps: 9  },
   annoyReact1: { frames: 1,  fps: 1  }, //adjusted fps was 6 now 1
-  annoyReact2: { frames: 2,  fps: 6  },
+  annoyReact2: { frames: 2,  fps: 6,loopFrames: [0, 1 ], loopCount: 3  },
   annoyReact3: { frames: 4,  fps: 6  },
   annoyReact4: { frames: 9,  fps: 7  },
   annoyReact5: { frames: 10, fps: 7  },
-  annoyReact6: { frames: 4,  fps: 7  },
+  annoyReact6: { frames: 4,  fps: 4, loopFrames: [3], loopCount: 2   }, //adjusted fps was 7 now 5
   annoyReact7: { frames: 9,  fps: 7  },
 }
 
