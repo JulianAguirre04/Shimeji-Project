@@ -25,12 +25,12 @@ function createWindow() {
 
   win.once('ready-to-show', () => {
     win.show()
-    win.webContents.openDevTools({ mode: 'detach' }) // remove this later
+    win.webContents.openDevTools({ mode: 'detach' }) // remove when done debugging---------------------------------------------------------------
   })
 }
 
 function createTray() {
-  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets/tray_icon.png'))
+  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets/Icon/Kirby_icon.png'))
   tray = new Tray(icon)
 
   const menu = Menu.buildFromTemplate([

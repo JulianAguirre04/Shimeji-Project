@@ -669,7 +669,7 @@ function draw() {
     const bx = posX + display / 2
     const by = posY + jumpY - 10
   
-    ctx.font = 'bold 13px "Comic Sans MS", monospace' /// Look into getting cute kirby font
+    ctx.font = 'bold 13px "KirbyClassic"' ///  cute kirby font
     ctx.textAlign = 'center'
     const tw  = ctx.measureText(bubble.text).width
     const pad = 10
@@ -696,7 +696,7 @@ function draw() {
     ctx.stroke()
   
     // Text
-    ctx.fillStyle = '#884466'
+    ctx.fillStyle = '#c45c82'
     ctx.fillText(bubble.text, bx, by - bh / 2 - 10 + 5)
   }
   
