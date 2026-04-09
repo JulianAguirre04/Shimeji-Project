@@ -146,9 +146,22 @@ loadFrames('annoyReact4', 'Annoy Reactions/React 4', 'Kirby-AnnoyReact4_#_sheet.
 loadFrames('annoyReact5', 'Annoy Reactions/React 5', 'Kirby-AnnoyReact5_#_sheet.png', 10)
 loadFrames('annoyReact6', 'Annoy Reactions/React 6', 'Kirby-AnnoyReact6_#_sheet.png',  4)
 loadFrames('annoyReact7', 'Annoy Reactions/React 7', 'Kirby-AnnoyReact7_#_sheet.png',  9)
+
 // food image 
-const foodImg = new Image()
-foodImg.src = path.join(__dirname, '../assets/Foods/Kirby_Apple_Sprite.png')
+
+const fs = require('fs')
+const foodFolder = path.join(__dirname, '../assets/Foods')
+const foodFiles  = fs.readdirSync(foodFolder).filter(f => f.endsWith('.png'))
+const foodImages = foodFiles.map(f => {
+  const img = new Image()
+  img.src = path.join(foodFolder, f)
+  return img
+})
+
+function randomFoodImg() {
+  return foodImages[Math.floor(Math.random() * foodImages.length)]
+}
+
 
 
 /// Error image loding finder
@@ -158,8 +171,6 @@ Object.entries(sheets).forEach(([key, frames]) => {
     img.onload  = () => console.log(`ok: ${key} frame ${i+1}`)
   })
 })
-foodImg.onerror = () => console.error(`FAILED: foodImg → ${foodImg.src}`)
-foodImg.onload  = () => console.log(`ok: foodImg`)
 
 
 // state 
@@ -213,7 +224,9 @@ let bubble = null  // { text, timer }
 
 const PHRASES = [
     'Poyo!', 'HIII~', '*SUCKS*', 'Poyo poyo!', 'I wanna snack ;(', 'Hai!', 'Oof', 
-    'This place is pretty', 'wish I could hang out with you..', 'YAAWWWNNN', 'remeber to drink water!'
+    'This place is pretty', 'wish I could hang out with you for real..', 'YAAWWWNNN', 'remeber to drink water!',
+    'Borgor..', 'Double cheesborgor......', 'I should invite metaknight','Can we play pls!!', 'Im gonna eat you >:)',
+    ':o', 'WOW, you seem really smart :o', 'WOOOW!'
 ]
 
 function getTimeInfo() {
@@ -266,14 +279,14 @@ const PHRASES_Alexis_BIRTHDAY = [
   'poyo! its your birthday!!!!'
 ]
 
-const PHRASES_Julian_BIRTHDAY = [
+const PHRASES_My_BIRTHDAY = [
   'Today seems special', '<3 <3 <3',
 ]
 
 function getPhrasesForNow() {
   const t = getTimeInfo()
-  if (t.isHerBirthday)  return PHRASES_HER_BIRTHDAY
-  if (t.isYourBirthday) return PHRASES_YOUR_BIRTHDAY
+  if (t.isAlexisBirthday)  return PHRASES_Alexis_BIRTHDAY
+  if (t.isMyBirthday)   return PHRASES_My_BIRTHDAY
   if (t.isNewYears)     return PHRASES_NEW_YEARS
   if (t.isLateNight)    return PHRASES_LATE_NIGHT
   if (t.isNight)        return PHRASES_NIGHT
@@ -400,8 +413,6 @@ function enterWalk() {
     const chosen = randomIdleAnim()
     lastIdleAnim = chosen
     setAnim(chosen)
-    if (Math.random() < 0.2) playSound('hai') // 20% chance of "HAI!!!""
-    else if (Math.random() < 0.025) playSound('dance') // 2% chance of dance
   }
   
   function enterSleep() {
@@ -473,6 +484,8 @@ function enterWalk() {
     setAnim(randomAnnoyReact())
     showBubble('<3')
     playSound('poke')
+    if (Math.random() < 0.2) playSound('hai') // 20% chance of "HAI!!!""
+    else if (Math.random() < 0.15) playSound('dance') // 12% chance of dance
   }
   
   function enterFatIdle() {
@@ -517,7 +530,7 @@ function update() {
           else if (t.isNight) walkSpeed = 0.8
 
 
-          posX += dirX * (isFat ? 1.0 : 1.5)
+          posX += dirX * (isFat ? 1.0 : walkSpeed)
     
           // Bounce off edges
           if (posX > sw - display) { posX = sw - display; dirX = -1; facingLeft = true  }
@@ -545,6 +558,8 @@ function update() {
           if (Math.random() < 0.001) { enterTrip();   break }
           if (Math.random() < 0.002) { enterIdle();   break }
           if (Math.random() < 0.0005) { enterHide();   break }
+
+          
     
           // Food spawns after idle timer
           if (idleTimer > IDLE_TO_FOOD && !food && Math.random() < 0.005) {
@@ -553,7 +568,7 @@ function update() {
           }
     
           // Sleep after even longer
-          if (idleTimer > IDLE_TO_SLEEP && Math.random() < 0.003) {
+          if (idleTimer > IDLE_TO_SLEEP && Math.random() < (t.isLateNight ? 0.015 : t.isNight ? 0.008 : 0.003)) {
             enterSleep()
             break
           }
@@ -712,20 +727,13 @@ function update() {
 // DRAWING IT ALL
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-
   const display = getDisplay()
 
-  function drawFood(x, y) {
-    if (!currentFoodImg || !currentFoodImg.complete) return
-    const size = 32
-    ctx.drawImage(currentFoodImg, x, y, size, size)
-  }
+  // draw food BEFORE kirby so it appears behind him
+  if (food) drawFood(food.x, food.y)
 
-  // kirby hiding
   if (isHidden) return
 
-
-  // get current frame image from array
   const frameImg = sheets[animName]?.[frameIdx]
   if (!frameImg || !frameImg.complete || frameImg.naturalWidth === 0) return
 
@@ -745,13 +753,13 @@ function draw() {
   if (bubble) drawBubble()
 }
 
-  // food
-  function drawFood(x, y) {
-    if (!foodImg.complete) return
-    const size = 32  // adjust this to whatever looks good on screen
-    ctx.drawImage(foodImg, x, y, size, size)
-  }
-
+// drawFood is OUTSIDE draw() as a standalone function
+function drawFood(x, y) {
+  if (!currentFoodImg || !currentFoodImg.complete) return
+  const size = 32
+  ctx.drawImage(currentFoodImg, x, y, size, size)
+}
+ 
   // speech bubble
   function drawBubble() {
     const display = getDisplay()
@@ -937,10 +945,12 @@ function loop() {
 }
 
 // Start when all sheets ready 
+//loadfoodImages(() => {}) // fills foodImages array synchronously via readdirSync
 const allFrameImages = Object.values(sheets).flat()
-const allImages = [...allFrameImages, foodImg]
+const allImages = [...allFrameImages, ...foodImages]
 const total = allImages.length
 let loaded = 0
+
 
 allImages.forEach(img => {
   img.onload  = () => { 
