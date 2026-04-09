@@ -22,18 +22,23 @@ const sounds = {
   hai: new Audio(path.join(__dirname, '../assets/sounds/hai.mp3')),
 }
 
-function playSound(name) {
+// Volume for all sounds
+Object.values(sounds).forEach(s => s.volume = 0.5) 
+
+function playSound(name, rate = 1.0) {
   const s = sounds[name]
   if (!s) return
   s.currentTime = 0  // rewind so it can replay quickly
+  s.playbackRate = rate //// 1.0 = normal, 0.5 = half speed, 1.5 = normal and a half speed
   s.play()
 }
 
-function playSoundLoop(name) {
+function playSoundLoop(name, rate = 1.0) {
   const s = sounds[name]
   if (!s) return
   s.currentTime = 0
   s.loop = true   // loop until stopped
+  s.playbackRate = rate //// 1.0 = normal, 0.5 = half speed, 1.5 = normal and a half speed
   s.play()
 }
 
@@ -69,7 +74,7 @@ const ANIM = {
   fatIdle:     { frames: 3,  fps: 7  },
   idleBlob:    { frames: 8,  fps: 5, loopFrames: [6, 7], loop: 4  },
   idleFish:    { frames: 6,  fps: 3, loopFrames: [0, 1, 2], loopCount: 3   }, //adjusted fps was 6 now 2
-  fishReact:   { frames: 5,  fps: 9  },
+  fishReact:   { frames: 5,  fps: 4  }, //adjusted fps was 9 now 4
   annoyReact1: { frames: 1,  fps: 1  }, //adjusted fps was 6 now 1
   annoyReact2: { frames: 2,  fps: 6,loopFrames: [0, 1 ], loopCount: 3  },
   annoyReact3: { frames: 4,  fps: 6  },
@@ -330,7 +335,8 @@ function enterWalk() {
     const chosen = randomIdleAnim()
     lastIdleAnim = chosen
     setAnim(chosen)
-    playSound(Math.floor(Math.random() * 5 ('hai'))) /// check if this actually works
+    if (Math.random() < 0.2) playSound('hai') // 20% chance of "HAI!!!""
+    else if (Math.random() < 0.025) playSound('dance') // 2% chance of dance
   }
   
   function enterSleep() {
@@ -370,9 +376,9 @@ function enterWalk() {
   function enterEat() {
     state = 'eating'
     food = null  // item disappears as he eats
+    playSound('eat', 1.5)
     setAnim('eat')
     showBubble('SUUUUCCCKKCKC')
-    playSound('eat')
   }
   
   function enterFat() {
@@ -758,7 +764,7 @@ window.addEventListener('mousedown', (e) => {
   state = 'jumping'
   setAnim('jump')
   frameIdx = 0
-  playSoundLoop('jump')
+  playSoundLoop('jump', 0.6)
 
   ipcRenderer.send('set-ignore-mouse', false)
   canvas.style.cursor = 'grabbing'
@@ -848,13 +854,19 @@ const total = allImages.length
 let loaded = 0
 
 allImages.forEach(img => {
-  img.onload  = () => { loaded++; if (loaded === total) loop() 
-    playSound('poyo')
+  img.onload  = () => { 
+    loaded++
+    if (loaded === total) {
+      loop()
+      playSound('poyo')  // ← only fires once
+    }
   }
   img.onerror = () => {
     console.error(`failed: ${img.src}`)
     loaded++
-    if (loaded === total) loop()
-      playSound('poyo')
+    if (loaded === total) {
+      loop()
+      playSound('poyo')  // ← only fires once
+    }
   }
 })
