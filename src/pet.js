@@ -213,15 +213,80 @@ let bubble = null  // { text, timer }
 
 const PHRASES = [
     'Poyo!', 'HIII~', '*SUCKS*', 'Poyo poyo!', 'I wanna snack ;(', 'Hai!', 'Oof', 
-    'This place is pretty', 'wish I could hang out with you..', 'YAAWWWNNN'
+    'This place is pretty', 'wish I could hang out with you..', 'YAAWWWNNN', 'remeber to drink water!'
 ]
 
-function showBubble(text, duration = 3000) {
-    bubble = { text, timer: duration}
+function getTimeInfo() {
+  const now   = new Date()
+  const hour  = now.getHours()
+  const month = now.getMonth() + 1  // 1-12
+  const day   = now.getDate()
+
+  return {
+    hour,
+    month,
+    day,
+    isNight:     hour >= 22 || hour < 2,   // 10pm - 2am
+    isLateNight: hour >= 2  && hour < 6,   // 2am - 6am
+    isMorning:   hour >= 6  && hour < 12,
+    isDay:       hour >= 12 && hour < 18,
+    isEvening:   hour >= 18 && hour < 22,
+
+    // special dates
+    isNewYears:    month === 1  && day === 1,
+    isAlexisBirthday: month === 1  && day === 17,
+    isMyBirthday:month === 3  && day === 10,
+  }
+}
+
+const PHRASES_NIGHT = [
+  'so sleepy...', '*yawns softly*', 'the stars are pretty tonight',
+  'dont stay up too late...', 'its so quiet out here',
+  'goodnight...', 'why are we still awake',
+  'the moon looks nice', 'Kirby is very sleepy poyo',
+  '*blinks slowly*'
+]
+
+const PHRASES_LATE_NIGHT = [
+  'its so late...', '*yawns*', 'uuhhhhhhhhh',
+  'I can barely keep my eyes open', 'zzzpoyo...',
+  'the world is so quiet now', '*droopy eyes*',
+  'are you winning?', 'dont you need your beauty sleep or smth...'
+]
+
+const PHRASES_NEW_YEARS = [
+  'happy new year!', 'new year new kirby!!',
+  '*blows party horn*', 'another year of adventures!',
+  'Hope your year has been amazing!'
+]
+
+const PHRASES_Alexis_BIRTHDAY = [
+  'Happy birthday!', 'Today is super special!',
+  'make a wish~', 'hope your day is amazing!',
+  'poyo! its your birthday!!!!'
+]
+
+const PHRASES_Julian_BIRTHDAY = [
+  'Today seems special', '<3 <3 <3',
+]
+
+function getPhrasesForNow() {
+  const t = getTimeInfo()
+  if (t.isHerBirthday)  return PHRASES_HER_BIRTHDAY
+  if (t.isYourBirthday) return PHRASES_YOUR_BIRTHDAY
+  if (t.isNewYears)     return PHRASES_NEW_YEARS
+  if (t.isLateNight)    return PHRASES_LATE_NIGHT
+  if (t.isNight)        return PHRASES_NIGHT
+  return PHRASES
 }
 
 function randomPhrase() {
-    return PHRASES[Math.floor(Math.random() * PHRASES.length)]
+  const pool = getPhrasesForNow()
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+function showBubble(text, duration = 3000) {
+    bubble = { text, timer: duration}
 }
 
 function randomIdleAnim() {
@@ -363,12 +428,15 @@ function enterWalk() {
     showBubble('*trips*')
   }
 
+  let currentFoodImg = null
+
   function spawnFood() {
     //spawns food 150-180 px in front of the kirb
     const offset = (150 + Math.random() * 180) * dirX
     let fx = posX + offset
     fx = Math.max(60, Math.min(window.screen.width - 60, fx))
-    food = { x: fx, y: groundY }  
+    food = { x: fx, y: groundY } 
+    currentFoodImg = randomFoodImg() // random food duh
     state = 'walkToFood'
     setAnim('walk')
   }
@@ -441,6 +509,14 @@ function update() {
 
         // ── WALK ──────────────────────────────────────────────────────
         case 'walk': {
+          const t = getTimeInfo()
+
+          // sleepy walk
+          let walkSpeed = 1.5
+          if (t.isLateNight) walkSpeed = 0.5
+          else if (t.isNight) walkSpeed = 0.8
+
+
           posX += dirX * (isFat ? 1.0 : 1.5)
     
           // Bounce off edges
@@ -455,6 +531,15 @@ function update() {
             break
           }
     
+
+          // Time based "events"
+  
+        let sleepChance  = t.isLateNight ? 0.015 : t.isNight ? 0.008 : 0.003
+        let idleChance   = t.isLateNight ? 0.008 : t.isNight ? 0.005 : 0.002
+        let sneezeChance = 0.001
+        let tripChance   = 0.001
+        let hideChance   = 0.0005
+
           // Normal Kirby random events while walking
           if (Math.random() < 0.001) { enterSneeze(); break }
           if (Math.random() < 0.001) { enterTrip();   break }
@@ -630,7 +715,11 @@ function draw() {
 
   const display = getDisplay()
 
-  if (food) drawFood(food.x, food.y)
+  function drawFood(x, y) {
+    if (!currentFoodImg || !currentFoodImg.complete) return
+    const size = 32
+    ctx.drawImage(currentFoodImg, x, y, size, size)
+  }
 
   // kirby hiding
   if (isHidden) return
@@ -858,7 +947,13 @@ allImages.forEach(img => {
     loaded++
     if (loaded === total) {
       loop()
-      playSound('poyo')  // ← only fires once
+      playSound('poyo')  // only fires once
+
+      const t = getTimeInfo()
+      setTimeout(() => {
+        if (t.isAlexisBirthday) showBubble('HAPPY BIRTHDAY LOVE!!!!!!', 6000)
+          else if (t.isNewYears) showBubble ('POYO HAPPY NEW YEARS!', 6000)
+    }, 2000)
     }
   }
   img.onerror = () => {
@@ -866,7 +961,7 @@ allImages.forEach(img => {
     loaded++
     if (loaded === total) {
       loop()
-      playSound('poyo')  // ← only fires once
+      playSound('poyo')  // only fires once
     }
   }
 })
