@@ -28,7 +28,27 @@ function playSound(name) {
   s.currentTime = 0  // rewind so it can replay quickly
   s.play()
 }
+
+function playSoundLoop(name) {
+  const s = sounds[name]
+  if (!s) return
+  s.currentTime = 0
+  s.loop = true   // loop until stopped
+  s.play()
+}
+
+function stopSound(name) {
+  const s = sounds[name]
+  if (!s) return
+  s.loop = false
+  s.pause()
+  s.currentTime = 0
+}
 //animation rows in sheet
+
+const soundTriggers =[
+  'poke', 'eat', 'jump', 'poyo', 'dance', 'hai'
+]
 
 const SPRITES = path.join(__dirname, '../assets/Kirby-Sprites')
 
@@ -310,6 +330,7 @@ function enterWalk() {
     const chosen = randomIdleAnim()
     lastIdleAnim = chosen
     setAnim(chosen)
+    playSound(Math.floor(Math.random() * 5 ('hai'))) /// check if this actually works
   }
   
   function enterSleep() {
@@ -351,6 +372,7 @@ function enterWalk() {
     food = null  // item disappears as he eats
     setAnim('eat')
     showBubble('SUUUUCCCKKCKC')
+    playSound('eat')
   }
   
   function enterFat() {
@@ -376,6 +398,7 @@ function enterWalk() {
     state = 'annoyReact'
     setAnim(randomAnnoyReact())
     showBubble('<3')
+    playSound('poke')
   }
   
   function enterFatIdle() {
@@ -390,6 +413,8 @@ function enterWalk() {
     setAnim('hide')
     showBubble('Whats in files?')
   }
+  // Sound functions
+   
 
 
 // Main logi updates!!
@@ -733,6 +758,7 @@ window.addEventListener('mousedown', (e) => {
   state = 'jumping'
   setAnim('jump')
   frameIdx = 0
+  playSoundLoop('jump')
 
   ipcRenderer.send('set-ignore-mouse', false)
   canvas.style.cursor = 'grabbing'
@@ -743,6 +769,7 @@ window.addEventListener('mouseup', (e) => {
   isDragging = false
   canvas.style.cursor = 'none'
   ipcRenderer.send('set-ignore-mouse', true)
+  stopSound('jump')
 
   // drop him — if above ground let him fall, otherwise just walk
   if (posY < groundY) {
@@ -751,6 +778,7 @@ window.addEventListener('mouseup', (e) => {
   } else {
     posY  = groundY
     enterWalk()
+    stopSound('jump')
   }
 })
 
@@ -820,10 +848,13 @@ const total = allImages.length
 let loaded = 0
 
 allImages.forEach(img => {
-  img.onload  = () => { loaded++; if (loaded === total) loop() }
+  img.onload  = () => { loaded++; if (loaded === total) loop() 
+    playSound('poyo')
+  }
   img.onerror = () => {
     console.error(`failed: ${img.src}`)
     loaded++
     if (loaded === total) loop()
+      playSound('poyo')
   }
 })
