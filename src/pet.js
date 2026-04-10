@@ -176,16 +176,26 @@ const SKINS = {
     label: 'Beam Kirby',
     folder: path.join(__dirname, '../assets/Kirby-Sprites/Beam-Kirby'),
     anims: {
-      walk:     { frames: 12, fps: 8,  folder: 'Walk',     pattern: 'BKirby_walk_#.png'     },
-      jump:     { frames: 6,  fps: 10, folder: 'jump',     pattern: 'BKirby_jump_#.png'     },
-      cuteIdle: { frames: 2,  fps: 4,  folder: 'cuteIdle', pattern: 'BKirby_cuteIdle_#.png' },
-      eat:      { frames: 5,  fps: 10, folder: 'Eat',      pattern: 'BKirby_eat_#.png'      },
-      throwup:  { frames: 5,  fps: 9,  folder: 'Spit',     pattern: 'BKirby_spit_#.png'     },
-      trip:     { frames: 16, fps: 5,  folder: 'Trip',     pattern: 'BKirby_trip_#.png'     },
-      trip2:    { frames: 5,  fps: 5,  folder: 'Trip2',    pattern: 'BKirby_trip2_#.png'    },
+      walk:          { frames: 12, fps: 8,  folder: 'Walk',                    pattern: 'BKirby_walk_#.png'          },
+      jump:          { frames: 6,  fps: 10, folder: 'jump',                    pattern: 'BKirby_jump_#.png'          },
+      idle:          { frames: 3,  fps: 4,  folder: 'idle',                    pattern: 'BKirby_idle_#.png'          },
+      cuteIdle:      { frames: 2,  fps: 3,  folder: 'cuteIdle',                pattern: 'BKirby_cuteIdle_#.png'      },
+      idleBlob:      { frames: 3,  fps: 3,  loopFrames: [1, 2], loop: 4,  folder: 'blob',                    pattern: 'BKirby_blob_#.png'          },
+      eat:           { frames: 5,  fps: 10, folder: 'Eat',                     pattern: 'BKirby_eat_#.png'           },
+      throwup:       { frames: 5,  fps: 9,  folder: 'Spit',                    pattern: 'BKirby_spit_#.png'          },
+      trip:          { frames: 16, fps: 5,   loopFrames: [15], loop: 3,  folder: 'Trip',                    pattern: 'BKirby_trip_#.png'          },
+      trip2:         { frames: 5,  fps: 4,   loopFrames: [4], loop: 3,  folder: 'Trip2',                   pattern: 'BKirby_trip2_#.png'         },
+      annoy:         { frames: 1,  fps: 1,  folder: 'Annoy_react',             pattern: 'BKirby_annoy_0.png'         },
+      bAnnoyReact1:  { frames: 3,  fps: 4,  folder: 'Annoy_reactions/Reaction_1', pattern: 'BKirby_annoy_react_#.png'  },
+      bAnnoyReact2:  { frames: 6,  fps: 3,  folder: 'Annoy_reactions/Reaction_2', pattern: 'BKirby_annoy_react2_#.png' },
+      bAnnoyReact3:  { frames: 9,  fps: 4,  folder: 'Annoy_reactions/Reaction_3', pattern: 'BKirby_annoy_react3_#.png' },
+      fatWalk:       { frames: 10, fps: 10, folder: 'Fatwalk',                   pattern: 'BKirby_fatwalk_#.png' },
+      fatIdle:       { frames: 3, fps: 7, folder: 'fatidle',                    pattern: 'BKirby_fatidle_#.png' },
     }
   }
 }
+
+const BEAM_ANNOY_REACTS = ['bAnnoyReact1', 'bAnnoyReact2', 'bAnnoyReact3']
 
 let currentSkin = 'normal'
 const skinSheets = {}  // stores loaded frames per skin
@@ -200,6 +210,15 @@ function loadSkinFrames(skinKey) {
 
   Object.entries(skin.anims).forEach(([animKey, animDef]) => {
     skinSheets[skinKey][animKey] = []
+    // handle single-file anims (frames: 1) that use _0 naming
+    if (animKey === 'annoy') {
+      const img = new Image()
+      img.src = path.join(skin.folder, animDef.folder, animDef.pattern)
+      img.onerror = () => console.error(`FAILED: ${skinKey}/${animKey} → ${img.src}`)
+      img.onload  = () => console.log(`ok: ${skinKey}/${animKey}`)
+      skinSheets[skinKey][animKey].push(img)
+      return
+    }
     for (let i = 1; i <= animDef.frames; i++) {
       const img = new Image()
       img.src = path.join(skin.folder, animDef.folder, animDef.pattern.replace('#', i))
@@ -296,7 +315,7 @@ const PHRASES = [
 function getFrames(animKey) {
   // lets skins override for specific animations
   const skin = SKINS[currentSkin]
-  if (currentSkin !== 'normal' && skin.anim && skin.anims[animKey]){
+  if (currentSkin !== 'normal' && skin.anims && skin.anims[animKey]){
     return skinSheets[currentSkin][animKey]
   }
   return sheets[animKey]
@@ -305,8 +324,8 @@ function getFrames(animKey) {
 function getAnimDef(animKey){
   // get fps/frames from skin if available, otherwise revert back to default kirby
   const skin = SKINS[currentSkin]
-  if (currentSkin !== 'normal' && skin.anim && skin.anims[animKey]) {
-    return skin.anim[animKey]
+  if (currentSkin !== 'normal' && skin.anims && skin.anims[animKey]) {
+    return skin.anims[animKey]
   }
   return ANIM[animKey]
 }
@@ -388,8 +407,13 @@ function randomIdleAnim() {
     return IDLE_ANIMS[Math.floor(Math.random() * IDLE_ANIMS.length)]
 }
 
-function randomAnnoyReact(){
-    return ANNOY_REACTS[Math.floor(Math.random() * ANNOY_REACTS.length)]
+function randomAnnoyReact() {
+  if (currentSkin === 'beam') {
+    // 50/50 split between beam-specific and normal annoy reacts
+    const pool = Math.random() < 0.5 ? BEAM_ANNOY_REACTS : ANNOY_REACTS
+    return pool[Math.floor(Math.random() * pool.length)]
+  }
+  return ANNOY_REACTS[Math.floor(Math.random() * ANNOY_REACTS.length)]
 }
 
 // display helper

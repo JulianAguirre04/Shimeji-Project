@@ -93,11 +93,6 @@ function createTray() {
   tray.setContextMenu(buildMenu('normal'))
 }
 
-ipcMain.on('set-ignore-mouse', (e, ignore) => {
-  if (win) {
-    win.setIgnoreMouseEvents(ignore, { forward: true })
-  }
-})
 
 // ipcMain only once, outside everything
 ipcMain.on('set-ignore-mouse', (e, ignore) => {
