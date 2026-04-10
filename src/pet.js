@@ -22,6 +22,7 @@ const sounds = {
   hai: new Audio(path.join(__dirname, '../assets/sounds/hai.mp3')),
 }
 
+
 // Volume for all sounds
 Object.values(sounds).forEach(s => s.volume = 0.5) 
 
@@ -103,6 +104,8 @@ function loadFrames(key, folder, namePattern, count) {
   }
 }
 
+
+// skin loader---------------------
 // core
 loadFrames('walk',     'Kirby walk',     'Kirby-walk-#.png',      11)
 loadFrames('jump',     'Kirby Jump',     'Kirby_jump_#.png',       6)
@@ -161,6 +164,66 @@ const foodImages = foodFiles.map(f => {
 function randomFoodImg() {
   return foodImages[Math.floor(Math.random() * foodImages.length)]
 }
+
+//skins------------------------------------------------------------------------------
+const SKINS = {
+  normal: {
+    label: 'Normal Kirby',
+    folder: null,  // uses default SPRITES path
+    anims: null,   // uses default ANIM
+  },
+  beam: {
+    label: 'Beam Kirby',
+    folder: path.join(__dirname, '../assets/Kirby-Sprites/Beam-Kirby'),
+    anims: {
+      walk:     { frames: 12, fps: 8,  folder: 'Walk',     pattern: 'BKirby_walk_#.png'     },
+      jump:     { frames: 6,  fps: 10, folder: 'jump',     pattern: 'BKirby_jump_#.png'     },
+      cuteIdle: { frames: 2,  fps: 4,  folder: 'cuteIdle', pattern: 'BKirby_cuteIdle_#.png' },
+      eat:      { frames: 5,  fps: 10, folder: 'Eat',      pattern: 'BKirby_eat_#.png'      },
+      throwup:  { frames: 5,  fps: 9,  folder: 'Spit',     pattern: 'BKirby_spit_#.png'     },
+      trip:     { frames: 16, fps: 5,  folder: 'Trip',     pattern: 'BKirby_trip_#.png'     },
+      trip2:    { frames: 5,  fps: 5,  folder: 'Trip2',    pattern: 'BKirby_trip2_#.png'    },
+    }
+  }
+}
+
+let currentSkin = 'normal'
+const skinSheets = {}  // stores loaded frames per skin
+//skins----------------------------------------------------------------------------------
+
+//skin loader --------------------------
+function loadSkinFrames(skinKey) {
+  const skin = SKINS[skinKey]
+  if (!skin || !skin.anims) return
+
+  skinSheets[skinKey] = {}
+
+  Object.entries(skin.anims).forEach(([animKey, animDef]) => {
+    skinSheets[skinKey][animKey] = []
+    for (let i = 1; i <= animDef.frames; i++) {
+      const img = new Image()
+      img.src = path.join(skin.folder, animDef.folder, animDef.pattern.replace('#', i))
+      img.onerror = () => console.error(`FAILED: ${skinKey}/${animKey} frame ${i} → ${img.src}`)
+      img.onload  = () => console.log(`ok: ${skinKey}/${animKey} frame ${i}`)
+      skinSheets[skinKey][animKey].push(img)
+    }
+  })
+}
+
+// load all skins upfront
+Object.keys(SKINS).forEach(key => {
+  if (key !== 'normal') loadSkinFrames(key)
+})
+
+// IPC listener for skin switching
+ipcRenderer.on('set-skin', (e, skinKey) => {
+  if (!SKINS[skinKey]) return
+  currentSkin = skinKey
+  console.log(`Skin changed to: ${skinKey}`)
+  // reset animation so it picks up new skin frames immediately
+  setAnim('walk')
+  enterWalk()
+})
 
 
 
@@ -228,6 +291,25 @@ const PHRASES = [
     'Borgor..', 'Double cheesborgor......', 'I should invite metaknight','Can we play pls!!', 'Im gonna eat you >:)',
     ':o', 'WOW, you seem really smart :o', 'WOOOW!'
 ]
+
+// helps select the right skin or frames for whatever situation
+function getFrames(animKey) {
+  // lets skins override for specific animations
+  const skin = SKINS[currentSkin]
+  if (currentSkin !== 'normal' && skin.anims && skin.anims[animKey]){
+    return skinSheets[currentSkin][animKey]
+  }
+  return sheets[animKey]
+}
+
+function getAnimDef(animKey){
+  // get fps/frames from skin if available, otherwise revert back to default kirby
+  const skin = SKINS[currentSkin]
+  if (currentSkin !== 'normal' && skin.anim && skin.anims[animKey]) {
+    return skin.anim[animKey]
+  }
+  return ANIM[animKey]
+}
 
 function getTimeInfo() {
   const now   = new Date()
@@ -326,7 +408,7 @@ function setAnim(name){
 }
 
 function advanceFrame() {
-  const anim = ANIM[animName]
+  const anim = getAnimDef(animName) 
   if (!anim) return
 //-------Reverse frames------------------------------------------------
 if (isReversing) {
@@ -401,7 +483,7 @@ if (isReversing) {
 }
 
 
-// state transitions
+// state transitions aka The State Machine
 function enterWalk() {
     state = 'walk'
     setAnim(isFat ? 'fatWalk' : 'walk')
@@ -437,6 +519,12 @@ function enterWalk() {
     state = 'trip'
     setAnim('trip')
     showBubble('*trips*')
+  }
+
+  function enterTrip2(){
+    state = 'trip2'
+    setAnim('trip2')
+    showBubble('WWAhhha!')
   }
 
   let currentFoodImg = null
@@ -555,9 +643,18 @@ function update() {
 
           // Normal Kirby random events while walking
           if (Math.random() < 0.001) { enterSneeze(); break }
-          if (Math.random() < 0.001) { enterTrip();   break }
           if (Math.random() < 0.002) { enterIdle();   break }
           if (Math.random() < 0.0005) { enterHide();   break }
+          if (Math.random() < 0.001){
+            //beam kirby picks between trip or trip2
+            if (currentSkin === 'beam' && Math.random() < 0.5){
+              state = 'trip'
+              setAnim('trip2')
+            } else {
+              enterTrip()
+            }
+            break
+          }
 
           
     
@@ -653,6 +750,12 @@ function update() {
           if (animDone) enterWalk()
           break
         }
+
+        // ── TRIP2 ─────────────────────────────────────────────────────
+        case 'trip2': {
+          if(animDone) enterWalk()
+            break
+        }
     
         // ── THROWUP ──────────────────────────────────────────────────
         case 'throwup': {
@@ -734,7 +837,7 @@ function draw() {
 
   if (isHidden) return
 
-  const frameImg = sheets[animName]?.[frameIdx]
+  const frameImg = getFrames(animName)?.[frameIdx]
   if (!frameImg || !frameImg.complete || frameImg.naturalWidth === 0) return
 
   const drawX = posX
