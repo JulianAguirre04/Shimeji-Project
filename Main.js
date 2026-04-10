@@ -20,6 +20,7 @@ function createWindow() {
   })
 
   win.maximize()
+  win.setSkipTaskbar(true)
   win.loadFile('src/index.html')
   win.setIgnoreMouseEvents(true, { forward: true })
 
@@ -103,10 +104,12 @@ app.whenReady().then(() => {
   createWindow()
   createTray()
 
-  app.setLoginItemSettings({
-    openAtLogin: true,
-    openAsHidden: true
-  })
+  if (app.isPackaged) {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      openAsHidden: true
+    })
+  }
 })
 
 process.on('SIGINT', () => app.quit())
