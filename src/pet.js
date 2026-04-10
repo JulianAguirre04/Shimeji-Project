@@ -307,8 +307,10 @@ let bubble = null  // { text, timer }
 const PHRASES = [
     'Poyo!', 'HIII~', '*SUCKS*', 'Poyo poyo!', 'I wanna snack ;(', 'Hai!', 'Oof', 
     'This place is pretty', 'wish I could hang out with you for real..', 'YAAWWWNNN', 'remeber to drink water!',
-    'Borgor..', 'Double cheesborgor......', 'I should invite metaknight','Can we play pls!!', 'Im gonna eat you >:)',
-    ':o', 'WOW, you seem really smart :o', 'WOOOW!'
+    'Borgor..', 'mmmmmmm double cheesborgor......', 'I should invite metaknight','Can we play pls!!', 'Im gonna eat you >:)',
+    ':o', 'WOW, you seem really smart :o', 'WOOOW!', 'Aleexiisssssss..', 'Can I watch you play!', 'i could go for a nap rn',
+    '*wiggles*',  '*stares at you*', 'ill fight anyone for you!!', 'i believe in you!!', 'have you eaten today?',
+    'WAHHH >:)', 'got any snacks?', 'can we go somewhere together'
 ]
 
 // helps select the right skin or frames for whatever situation
@@ -358,20 +360,21 @@ const PHRASES_NIGHT = [
   'dont stay up too late...', 'its so quiet out here',
   'goodnight...', 'why are we still awake',
   'the moon looks nice', 'Kirby is very sleepy poyo',
-  '*blinks slowly*'
+  '*blinks slowly*', 'are you still working??',
 ]
 
 const PHRASES_LATE_NIGHT = [
   'its so late...', '*yawns*', 'uuhhhhhhhhh',
   'I can barely keep my eyes open', 'zzzpoyo...',
   'the world is so quiet now', '*droopy eyes*',
-  'are you winning?', 'dont you need your beauty sleep or smth...'
+  'are you winning?', 'dont you need your beauty sleep or smth...',
+  'are you still working??', 'when can we go to bed :('
 ]
 
 const PHRASES_NEW_YEARS = [
   'happy new year!', 'new year new kirby!!',
   '*blows party horn*', 'another year of adventures!',
-  'Hope your year has been amazing!'
+  'Hope your year has been amazing!', 'cant wait to spend another year with you!'
 ]
 
 const PHRASES_Alexis_BIRTHDAY = [
@@ -381,7 +384,7 @@ const PHRASES_Alexis_BIRTHDAY = [
 ]
 
 const PHRASES_My_BIRTHDAY = [
-  'Today seems special', '<3 <3 <3',
+  'Today seems weird..', '<3 <3 <3',
 ]
 
 function getPhrasesForNow() {
@@ -1085,6 +1088,7 @@ allImages.forEach(img => {
     if (loaded === total) {
       loop()
       playSound('poyo')  // only fires once
+      showBubble('HI Alexis!!!!') 
 
       const t = getTimeInfo()
       setTimeout(() => {
