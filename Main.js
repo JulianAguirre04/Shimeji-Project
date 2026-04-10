@@ -33,15 +33,71 @@ function createTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, 'assets/Icon/Kirby_icon.png'))
   tray = new Tray(icon)
 
-  const menu = Menu.buildFromTemplate([
-    { label: 'Toggle Kirby', click: () => win.isVisible() ? win.hide() : win.show() },
-    { type: 'separator' },
-    { label: 'Quit', click: () => app.quit() }
-  ])
+  //skin Icons
+  const normalIcon = nativeImage.createFromPath(
+    path.join(__dirname, 'assets/icons/kirby_icon.png')
+  ).resize({ width: 16, height: 16})
+
+  const beamIcon = nativeImage.createFromPath(
+    path.join(__dirname, 'assets/icons/beamIcon.png')
+  ).resize({ width: 16, height: 16})
+
+  // adding tray subsections for skin selection
+  function buildMenu(activeSkin) {
+    return Menu.buildFromTemplate([
+      {
+        label: 'Skins',
+        submenu: [
+          {
+            label: 'OG Kirby',
+            type: 'radio',
+            checked: activeSkin === 'normal',
+            icon: normalIcon,
+            click: () => {
+              win.webContents.send('set-skin', 'normal')
+              tray.setContextMenu(buildMenu('normal'))
+            }
+          },
+          {
+            label: 'Silly Kirby',
+            type: 'radio',
+            checked: activeSkin === 'beam',
+            icon: beamIcon,
+            click: () => {
+              win.webContents.send('set-skin', 'beam')
+              tray.setContextMenu(buildMenu('beam'))
+            }
+          }
+        ]
+      },
+      { type: 'separator' },
+      {
+        label: 'Toggle Kirby',
+        click: () => {
+          if (win.isVisible()) {
+            win.hide()
+          } else {
+            win.show()
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => app.quit()
+      }
+    ])
+  }
 
   tray.setToolTip('Kirby Pet')
-  tray.setContextMenu(menu)
+  tray.setContextMenu(buildMenu('normal'))
 }
+
+ipcMain.on('set-ignore-mouse', (e, ignore) => {
+  if (win) {
+    win.setIgnoreMouseEvents(ignore, { forward: true })
+  }
+})
 
 // ipcMain only once, outside everything
 ipcMain.on('set-ignore-mouse', (e, ignore) => {

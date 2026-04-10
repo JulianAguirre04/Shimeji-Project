@@ -296,7 +296,7 @@ const PHRASES = [
 function getFrames(animKey) {
   // lets skins override for specific animations
   const skin = SKINS[currentSkin]
-  if (currentSkin !== 'normal' && skin.anims && skin.anims[animKey]){
+  if (currentSkin !== 'normal' && skin.anim && skin.anims[animKey]){
     return skinSheets[currentSkin][animKey]
   }
   return sheets[animKey]
@@ -648,7 +648,7 @@ function update() {
           if (Math.random() < 0.001){
             //beam kirby picks between trip or trip2
             if (currentSkin === 'beam' && Math.random() < 0.5){
-              state = 'trip'
+              state = 'trip2'
               setAnim('trip2')
             } else {
               enterTrip()
