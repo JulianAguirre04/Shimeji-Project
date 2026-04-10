@@ -20,6 +20,9 @@ const sounds = {
   poyo: new Audio(path.join(__dirname, '../assets/sounds/poyo.mp3')),
   dance: new Audio(path.join(__dirname, '../assets/sounds/dance.mp3')),
   hai: new Audio(path.join(__dirname, '../assets/sounds/hai.mp3')),
+  fountainofdreams: new Audio(path.join(__dirname, '../assets/sounds/fountain-of-dreams.mp3')),
+  victory: new Audio(path.join(__dirname, '../assets/sounds/Kirbys_Victory.mp3'))
+
 }
 
 
@@ -603,6 +606,8 @@ function enterWalk() {
     playSound('poke')
     if (Math.random() < 0.2) playSound('hai') // 20% chance of "HAI!!!""
     else if (Math.random() < 0.15) playSound('dance') // 12% chance of dance
+    else if (Math.random() < 0.05) playSound('Victory') // 4% chance of victory!!!! 0.05
+      else if (Math.random() < 0.02) playSound ('fountainofdreams') // 1.3% chance of greatness 0.02
   }
   
   function enterFatIdle() {
