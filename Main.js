@@ -25,17 +25,17 @@ function createWindow() {
 
   win.once('ready-to-show', () => {
     win.show()
-   // win.webContents.openDevTools({ mode: 'detach' }) // remove when done debugging---------------------------------------------------------------
   })
 }
 
+
 function createTray() {
-  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets/Icon/Kirby_icon.png'))
+  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets/Icon/Kirby_icon.ico'))
   tray = new Tray(icon)
 
   //skin Icons
   const normalIcon = nativeImage.createFromPath(
-    path.join(__dirname, 'assets/icons/kirby_icon.png')
+    path.join(__dirname, 'assets/icons/Kirby_icon.ico')
   ).resize({ width: 16, height: 16})
 
   const beamIcon = nativeImage.createFromPath(

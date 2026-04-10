@@ -2,7 +2,8 @@
   "name": "kirby-pet",
   "version": "1.0.0",
   "description": "Kirby desktop pet",
-  "main": "main.js",
+  "author": "Julian",
+  "main": "Main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"
@@ -10,19 +11,29 @@
   "build": {
     "appId": "com.yourname.kirbypet",
     "productName": "Kirby Pet",
+    "extends": null,
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/Icon/kirby_puter.ico"
     },
+
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/Kirby_icon.png"
+    },
+    
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
     "files": [
-      "**/*",
-      "!node_modules/.cache",
+      "Main.js",
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
       "!**/*.kra",
-      "!**/*.log"
+      "!**/*.log",
+      "!node_modules/.cache"
     ],
     "directories": {
       "output": "dist"

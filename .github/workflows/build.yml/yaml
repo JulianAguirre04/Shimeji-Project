@@ -1,0 +1,51 @@
+name: Build Kirby Pet
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:  # lets you trigger it manually from GitHub
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build Windows
+        run: npm run build
+        
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v3
+        with:
+          name: Kirby-Pet-Windows
+          path: dist/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build Mac
+        run: npm run build
+        
+      - name: Upload Mac installer
+        uses: actions/upload-artifact@v3
+        with:
+          name: Kirby-Pet-Mac
+          path: dist/*.dmg

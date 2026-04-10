@@ -192,8 +192,8 @@ const SKINS = {
       bAnnoyReact1:  { frames: 3,  fps: 4,  folder: 'Annoy_reactions/Reaction_1', pattern: 'BKirby_annoy_react_#.png'  },
       bAnnoyReact2:  { frames: 6,  fps: 3,  folder: 'Annoy_reactions/Reaction_2', pattern: 'BKirby_annoy_react2_#.png' },
       bAnnoyReact3:  { frames: 9,  fps: 4,  folder: 'Annoy_reactions/Reaction_3', pattern: 'BKirby_annoy_react3_#.png' },
-      fatWalk:       { frames: 10, fps: 10, folder: 'Fatwalk',                   pattern: 'BKirby_fatwalk_#.png' },
-      fatIdle:       { frames: 3, fps: 7, folder: 'fatidle',                    pattern: 'BKirby_fatidle_#.png' },
+      fatWalk: { frames: 10, fps: 10, folder: 'fatwalk', pattern: 'Bkirby_fatwalk_#.png' },
+      fatIdle: { frames: 3,  fps: 7,  folder: 'fatidle', pattern: 'Bkirby_fatidle_#.png' },
     }
   }
 }
@@ -323,6 +323,7 @@ function getFrames(animKey) {
   if (currentSkin !== 'normal' && skin.anims && skin.anims[animKey]){
     return skinSheets[currentSkin][animKey]
   }
+  console.log(`falling back to normal for: ${animKey}`) // remove this later
   return sheets[animKey]
 }
 
