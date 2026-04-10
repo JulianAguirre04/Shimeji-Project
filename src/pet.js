@@ -360,7 +360,9 @@ const PHRASES_NIGHT = [
   'dont stay up too late...', 'its so quiet out here',
   'goodnight...', 'why are we still awake',
   'the moon looks nice', 'Kirby is very sleepy poyo',
-  '*blinks slowly*', 'are you still working??',
+  '*blinks slowly*', 'are you still working??', 'I want a night snack',
+  'movie night???', 'I wanna see the stars!!', 'a bed sounds so nice rn',
+  'do you like me or snoopy more??', 'need a midnight snack'
 ]
 
 const PHRASES_LATE_NIGHT = [
@@ -368,7 +370,7 @@ const PHRASES_LATE_NIGHT = [
   'I can barely keep my eyes open', 'zzzpoyo...',
   'the world is so quiet now', '*droopy eyes*',
   'are you winning?', 'dont you need your beauty sleep or smth...',
-  'are you still working??', 'when can we go to bed :('
+  'are you still working??', 'when can we go to bed :(', 'need a midnight snack'
 ]
 
 const PHRASES_NEW_YEARS = [
@@ -597,7 +599,7 @@ function enterWalk() {
   function enterAnnoyReact() {
     state = 'annoyReact'
     setAnim(randomAnnoyReact())
-    showBubble('<3')
+    showBubble('Poyo <3')
     playSound('poke')
     if (Math.random() < 0.2) playSound('hai') // 20% chance of "HAI!!!""
     else if (Math.random() < 0.15) playSound('dance') // 12% chance of dance
