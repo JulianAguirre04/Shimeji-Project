@@ -25,7 +25,7 @@ function createWindow() {
 
   win.once('ready-to-show', () => {
     win.show()
-    win.webContents.openDevTools({ mode: 'detach' }) // remove when done debugging---------------------------------------------------------------
+   // win.webContents.openDevTools({ mode: 'detach' }) // remove when done debugging---------------------------------------------------------------
   })
 }
 
