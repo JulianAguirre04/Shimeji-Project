@@ -302,7 +302,7 @@ const MK_PHRASES = [
   { text: 'I heard there was a champion here.' },
   { text: 'Just checking in..' },
   { text: 'Always bet on red, always.' },
-  { text: 'Are you not afraid?' },
+  { text: 'Ever heard about gambling?' },
   { text: 'I do not waver like some.' },
   { text: 'If nothing else remember, you have made it this far.'},
   { text: 'ライブ！' },
