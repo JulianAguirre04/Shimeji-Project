@@ -2,7 +2,7 @@
   "name": "kirby-pet",
   "version": "1.0.0",
   "description": "Kirby desktop pet",
-  "author": "Julian",
+  "author": "Julian Aguirre",
   "main": "Main.js",
   "scripts": {
     "start": "electron .",
