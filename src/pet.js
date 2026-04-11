@@ -12,6 +12,7 @@ canvas.style.height = canvas.height + 'px'
 
 const DISPLAY_FAT = 96
 const DISPLAY_NORMAL = 64
+const DISPLAY_MK = 80
 
 const sounds = {
   poke: new Audio(path.join(__dirname, '../assets/sounds/poke.wav')),
@@ -21,7 +22,10 @@ const sounds = {
   dance: new Audio(path.join(__dirname, '../assets/sounds/dance.mp3')),
   hai: new Audio(path.join(__dirname, '../assets/sounds/hai.mp3')),
   fountainofdreams: new Audio(path.join(__dirname, '../assets/sounds/fountain-of-dreams.mp3')),
-  victory: new Audio(path.join(__dirname, '../assets/sounds/Kirbys_Victory.mp3'))
+  victory: new Audio(path.join(__dirname, '../assets/sounds/Kirbys_Victory.mp3')),
+  meta_jump: new Audio(path.join(__dirname, '../assets/sounds/Meta_Jump.wav')),
+  meta_popup: new Audio(path.join(__dirname, '../assets/sounds/Meta_popup.wav')),
+  spin: new Audio(path.join(__dirname, '../assets/sounds/Meta_Spin.wav'))
 
 }
 
@@ -247,7 +251,328 @@ ipcRenderer.on('set-skin', (e, skinKey) => {
   enterWalk()
 })
 
+//META KNIGHT CHUNK!!!!!!!!!!--------------------------------------------------
+const MK_SPRITES = path.join(__dirname, '../assets/Meta_Knight')
+const mksheets = {}
 
+
+function loadMKFrames(key, folder, pattern, count) {
+  mksheets[key] = []
+  for (let i = 1; i <= count; i++) {
+    const img = new Image()
+    img.src = path.join(MK_SPRITES, folder, pattern.replace('#', i))
+    img.onerror = () => console.error(`MK FAILED: ${key} frame ${i} → ${img.src}`)
+    img.onload  = () => console.log(`MK ok: ${key} frame ${i}`)
+    mksheets[key].push(img)
+  }
+}
+
+//Meta folders
+loadMKFrames('mk_flight',  'Meta_flight',  'Flight_#.png',   5)
+loadMKFrames('mk_hide',    'Meta_hide',    'Hide_#.png',     4)
+loadMKFrames('mk_reveal',  'Meta_reveal',  'Reveal_#.png',  12)  
+loadMKFrames('mk_takeoff', 'Meta_takeoff', 'Takeoff_#.png',  9)  
+loadMKFrames('mk_spin',    'Spin',         'Spin_#.png',     7)  
+loadMKFrames('mk_idle', 'Idle', 'Idle.png', 1)
+
+
+
+const MK_ANIM = {
+  mk_idle:    { frames: 1,  fps: 1  },
+  mk_flight:  { frames: 5,  fps: 6, loop: true  },
+  mk_hide:    { frames: 4,  fps: 6, },
+  mk_reveal:  { frames: 12, fps: 6  },
+  mk_takeoff: { frames: 9,  fps: 7  },
+  mk_spin:    { frames: 7,  fps: 8, },
+}
+
+const MK_ENTRANCES = ['hide', 'reveal', 'spin']
+
+const MK_PHRASES = [
+  { text: 'Surrender.' },
+  { text: 'Kirby invited me.' },
+  { text: '...' },
+  { text: 'The stars coalesce once more.' },
+  { text: 'Curious..' },
+  { text: 'Where are the snacks.' },
+  { text: 'What an interesting place...' },
+  { text: 'Next time, we duel.' },
+  { text: 'Do not bore me.' },
+  { text: '?' },
+  { text: 'I heard there was a champion here.' },
+  { text: 'Just checking in..' },
+  { text: 'Always bet on red, always.' },
+  { text: 'Are you not afraid?' },
+  { text: 'I do not waver like some.' },
+  { text: 'If nothing else remember, you have made it this far.'},
+  { text: 'ライブ！' },
+  {text: 'Never underestimate your potential for you are formidable..'},
+  {text: 'Are you not afraid?'},
+  {text: 'Are you still not afraid??'},
+  {text: 'I do not waver like some.'},
+  {text: 'Hi'},
+  {text: 'do you have coffee?'},
+  // rare ones
+  { text: '今夜、月や星は美しく輝いているけれど、決してあなたほどには輝けない。', rare: true },
+  { text: 'You will make it. I am on your side.', rare: true },
+  { text: 'Stay the course. You will make it, someday.', rare: true },
+  { text: 'Be vigilant. I love you.', rare: true },
+  { text: 'Never falter for your mind is beautiful and your will is strong.', rare: true },
+  { text: 'Your beauty knows no bounds, much like kirbys gluttony.', rare: true}
+]
+
+function mkRandomPhrase() {
+  // 15% chance for pulling from da rare pool
+  const rare = MK_PHRASES.filter(p => p.rare)
+  const common = MK_PHRASES.filter(p => !p.rare)
+  const pool = (Math.random() < 0.05 && rare.length) ? rares : common
+  return pool[Math.floor(Math.random() * pool.length)].text
+}
+
+let mk = null
+let mkBubble = null
+
+function spawnMetaKnight() {
+  if (mk) return
+  const entranceType = MK_ENTRANCES[Math.floor(Math.random() * MK_ENTRANCES.length)]
+  const targetX = Math.floor(window.screen.width * (0.3 + Math.random() * 0.4))
+
+  // hide entrance starts on screen at targetX already, others fly in from edge
+  let startX, dirX, facingLeftMK
+  if (entranceType === 'hide') {
+    startX      = targetX
+    dirX        = targetX < window.screen.width / 2 ? 1 : -1
+    facingLeftMK = dirX < 0
+  } else {
+    const fromLeft = Math.random() < 0.5
+    startX       = fromLeft ? -70 : window.screen.width + 10
+    dirX         = fromLeft ? 1 : -1
+    facingLeftMK = !fromLeft
+  }
+
+  mk = {
+    x:            startX,
+    y:            groundY,
+    targetX,
+    dirX,
+    facingLeft:   facingLeftMK,
+    frameIdx:     0,
+    frameTick:    0,
+    animDone:     false,
+    entranceType,
+    // starting anim depends on entrance
+    animName:     entranceType === 'hide'   ? 'mk_hide'
+                : entranceType === 'reveal' ? 'mk_reveal'
+                : 'mk_spin',
+    state:        entranceType === 'hide' ? 'entering_hide' : 'entering_fly',
+    timer:        0,
+  }
+
+}
+
+function mkAdvanceFrame() {
+  if (!mk) return
+  const anim = MK_ANIM[mk.animName]
+  if (!anim) return
+  const ticks = Math.max(1, Math.round(60 / anim.fps))
+  mk.frameTick++
+  if (mk.frameTick < ticks) return
+  mk.frameTick = 0
+  if (mk.frameIdx >= anim.frames - 1) {
+    mk.animDone = true
+    if(anim.loop) mk.frameIdx = 0
+  } else {
+    mk.frameIdx++
+  }
+}
+
+function mkSetAnim(name) {
+  mk.animName  = name
+  mk.frameIdx  = 0
+  mk.frameTick = 0
+  mk.animDone  = false
+}
+
+function updateMK() {
+  if (!mk) return
+  mk.animDone = false
+  mkAdvanceFrame()
+
+  switch (mk.state) {
+
+    // ── fly in from edge (reveal / spin entrances) ──────────────
+    case 'entering_fly': {
+      // use flight anim while moving
+      if (mk.animName !== 'mk_flight') mkSetAnim('mk_flight')
+      mk.x += mk.dirX * 4
+      const arrived = mk.dirX > 0 ? mk.x >= mk.targetX : mk.x <= mk.targetX
+      if (arrived) {
+        mk.x = mk.targetX
+        facingLeft = mk.x > posX
+        if (mk.entranceType === 'spin') {
+          playSound('spin')
+          mkSetAnim('mk_spin')
+        } else {
+          mkSetAnim('mk_reveal')
+        }
+        mk.state = 'entrance_anim'
+      }
+      break
+    }
+
+    // ── hide entrance: play hide anim in place ───────────────────
+    case 'entering_hide': {
+      if (!mk.soundPlayed) {
+        playSound('meta_popup')
+        mk.soundPlayed = true
+      }
+      if (mk.animDone) {
+        mk.timer = 180 + Math.floor(Math.random() * 180)
+        mk.state = 'present'
+        showMKBubble(mkRandomPhrase(), 4000)
+        facingLeft = mk.x > posX
+      }
+      break
+    }
+
+    // ── wait for entrance anim to finish then go idle ────────────
+    case 'entrance_anim': {
+      if (mk.animDone) {
+        mkSetAnim('mk_idle')
+        mk.timer = 180 + Math.floor(Math.random() * 180)
+        mk.state = 'present'
+        showMKBubble(mkRandomPhrase(), 4000)
+      }
+      break
+    }
+
+    // ── chilling ─────────────────────────────────────────────────
+    case 'present': {
+      mk.timer--
+      if (mk.timer <= 0) {
+        if (mk.entranceType === 'hide') {
+          // reverse the hide anim to exit
+          mk.frameIdx  = MK_ANIM['mk_hide'].frames - 1
+          mk.frameTick = 0
+          mk.animName  = 'mk_hide'
+          mk.state     = 'leaving_hide'
+        } else {
+          mkSetAnim('mk_takeoff')
+          playSound('meta_jump')
+          mk.state = 'leaving_takeoff'
+          // pick exit direction
+          mk.dirX      = mk.x < window.screen.width / 2 ? -1 : 1
+          mk.facingLeft = mk.dirX < 0
+        }
+      }
+      break
+    }
+
+    // ── hide exit: play hide in reverse then vanish ──────────────
+    case 'leaving_hide': {
+      // manually step backward
+      const anim  = MK_ANIM['mk_hide']
+      const ticks = Math.max(1, Math.round(60 / anim.fps))
+      mk.frameTick++
+      if (mk.frameTick >= ticks) {
+        mk.frameTick = 0
+        if (mk.frameIdx <= 0) {
+          mk = null  // done, vanish
+          stopSound('meta_jump')
+        } else {
+          mk.frameIdx--
+        }
+      }
+      break
+    }
+
+    // ── takeoff then fly off screen ──────────────────────────────
+    case 'leaving_takeoff': {
+      if (mk.animDone) {
+        mkSetAnim('mk_flight')
+        playSoundLoop('meta_jump', 0.6) 
+        mk.state = 'leaving_flight'
+      }
+      break
+    }
+
+    case 'leaving_flight': {
+      mk.x += mk.dirX * 5
+      mk.y -= 1.5  // drift upward
+      const offscreen = mk.dirX > 0
+        ? mk.x > window.screen.width + 80
+        : mk.x < -80
+      if (offscreen) {
+        mk = null
+        stopSound('meta_jump')
+      }
+      break
+    }
+  }
+}
+
+function drawMK() {
+  if (!mk) return
+  const frames = mksheets[mk.animName]
+  if (!frames || frames.length === 0) return
+  const img = frames[mk.frameIdx] || frames[0]
+  if (!img || !img.complete || img.naturalWidth === 0) return
+
+  const size = DISPLAY_MK
+
+  ctx.save()
+  if (mk.facingLeft) {
+    ctx.translate(mk.x + size / 2, 0)
+    ctx.scale(-1, 1)
+    ctx.drawImage(img, -size / 2, mk.y, size, size)
+  } else {
+    ctx.drawImage(img, mk.x, mk.y, size, size)
+  }
+  ctx.restore()
+  drawMKBubble()
+}
+
+function showMKBubble(text, duration = 40000){
+  mkBubble = {text, timer: duration}
+}
+
+function drawMKBubble() {
+  if (!mk || !mkBubble) return
+  const size = DISPLAY_NORMAL
+  const bx = mk.x + size / 2
+  const by = mk.y
+
+  ctx.font = 'bold 13px "KirbyClassic"'
+  ctx.textAlign = 'center'
+  const tw  = ctx.measureText(mkBubble.text).width
+  const pad = 10
+  const bw  = tw + pad * 2
+  const bh  = 28
+
+  // box
+  ctx.fillStyle   = '#1a1a2e'
+  ctx.strokeStyle = '#6a5acd'
+  ctx.lineWidth   = 2
+  roundRect(ctx, bx - bw / 2, by - bh - 10, bw, bh, 8)
+  ctx.fill()
+  ctx.stroke()
+
+  // tail
+  ctx.beginPath()
+  ctx.moveTo(bx - 6, by - 10)
+  ctx.lineTo(bx + 6, by - 10)
+  ctx.lineTo(bx,     by + 2)
+  ctx.closePath()
+  ctx.fillStyle = '#1a1a2e'
+  ctx.fill()
+  ctx.strokeStyle = '#6a5acd'
+  ctx.stroke()
+
+  // text
+  ctx.fillStyle = '#b8a9ff'
+  ctx.fillText(mkBubble.text, bx, by - bh / 2 - 10 + 5)
+}
+//META KNIGHT CHUNK!!!!!!!!!!--------------------------------------------------
 
 /// Error image loding finder
 Object.entries(sheets).forEach(([key, frames]) => {
@@ -607,7 +932,7 @@ function enterWalk() {
     playSound('poke')
     if (Math.random() < 0.2) playSound('hai') // 20% chance of "HAI!!!""
     else if (Math.random() < 0.15) playSound('dance') // 12% chance of dance
-    else if (Math.random() < 0.05) playSound('Victory') // 4% chance of victory!!!! 0.05
+    else if (Math.random() < 0.05) playSound('victory') // 4% chance of victory!!!! 0.05
       else if (Math.random() < 0.02) playSound ('fountainofdreams') // 1.3% chance of greatness 0.02
   }
   
@@ -623,9 +948,6 @@ function enterWalk() {
     setAnim('hide')
     showBubble('Whats in files?')
   }
-  // Sound functions
-   
-
 
 // Main logi updates!!
 function update() {
@@ -634,6 +956,7 @@ function update() {
     animDone = false // reset each frame, advance frame may set it true gotta see
 
     advanceFrame()
+    updateMK()
 
     if (jumpV !== 0 || jumpY < 0) {
         jumpY += jumpV
@@ -647,6 +970,12 @@ function update() {
         case 'walk': {
           const t = getTimeInfo()
 
+          // Metaknight spawn rate---------------------------------------------------
+          if (!mk && Math.random() < 0.0005) {
+            spawnMetaKnight()
+            break
+          }
+
           // sleepy walk
           let walkSpeed = 1.5
           if (t.isLateNight) walkSpeed = 0.5
@@ -658,6 +987,9 @@ function update() {
           // Bounce off edges
           if (posX > sw - display) { posX = sw - display; dirX = -1; facingLeft = true  }
           if (posX < 0)             { posX = 0;            dirX =  1; facingLeft = false }
+
+          //keep facing in sync with movement direction AHHHHHH
+          facingLeft = dirX < 0
     
           idleTimer++
     
@@ -887,6 +1219,7 @@ function draw() {
     ctx.drawImage(frameImg, drawX, drawY, display, display)
   }
   ctx.restore()
+  drawMK()
 
   if (bubble) drawBubble()
 }
@@ -1072,6 +1405,10 @@ function tickBubble(){
     if (bubble) {
         bubble.timer -= 16
         if (bubble.timer <= 0) bubble = null
+    }
+    if (mkBubble) {
+      mkBubble.timer -= 16
+      if (mkBubble.timer <= 0) mkBubble = null
     }
 }
 // Za main loop
