@@ -316,16 +316,23 @@ const MK_PHRASES = [
   { text: '今夜、月や星は美しく輝いているけれど、決してあなたほどには輝けない。', rare: true },
   { text: 'You will make it. I am on your side.', rare: true },
   { text: 'Stay the course. You will make it, someday.', rare: true },
-  { text: 'Be vigilant. I love you.', rare: true },
+  { text: 'Be vigilant. I love you.', superrare: true },
   { text: 'Never falter for your mind is beautiful and your will is strong.', rare: true },
   { text: 'Your beauty knows no bounds, much like kirbys gluttony.', rare: true}
 ]
 
 function mkRandomPhrase() {
   // 15% chance for pulling from da rare pool
+  const superrare = MK_PHRASES.filter(p => p.superrare)
   const rare = MK_PHRASES.filter(p => p.rare)
-  const common = MK_PHRASES.filter(p => !p.rare)
-  const pool = (Math.random() < 0.05 && rare.length) ? rares : common
+  const common = MK_PHRASES.filter(p => !p.rare && !p.superrare)
+
+  const roll = Math.random()
+  let pool
+  if (roll < 0.03 && superrare.length) pool = superrare
+  else if(roll < 0.03 + 0.08 && rare.length) pool = rare
+  else pool = common
+
   return pool[Math.floor(Math.random() * pool.length)].text
 }
 
