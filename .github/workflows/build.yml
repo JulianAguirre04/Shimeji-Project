@@ -3,18 +3,18 @@ name: Build Kirby Pet
 on:
   push:
     branches: [ master ]
-  workflow_dispatch:  # lets you trigger it manually from GitHub
+  workflow_dispatch:
 
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           
       - name: Install dependencies
         run: npm install
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           
       - name: Install dependencies
         run: npm install
